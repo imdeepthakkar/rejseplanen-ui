@@ -53,19 +53,38 @@ export default function PWAInstallPrompt() {
       setDeferredPrompt(null);
     };
 
+    // Support manual trigger for debugging/e2e testing or titlebar button
+    const handleManualOpen = () => setShowIOSDrawer(true);
+    const handleTriggerInstall = async () => {
+      if (deferredPrompt) {
+        try {
+          await deferredPrompt.prompt();
+          const choiceResult = await deferredPrompt.userChoice;
+          if (choiceResult && choiceResult.outcome === 'accepted') {
+            setIsInstalled(true);
+          }
+        } catch (err) {
+          console.error('Error triggering PWA install prompt:', err);
+        } finally {
+          setDeferredPrompt(null);
+        }
+      } else {
+        setShowIOSDrawer(true);
+      }
+    };
+
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
-
-    // Support manual trigger for debugging/e2e testing
-    const handleManualOpen = () => setShowIOSDrawer(true);
     window.addEventListener('pwa-show-ios-guide', handleManualOpen);
+    window.addEventListener('pwa-trigger-install', handleTriggerInstall);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
       window.removeEventListener('pwa-show-ios-guide', handleManualOpen);
+      window.removeEventListener('pwa-trigger-install', handleTriggerInstall);
     };
-  }, []);
+  }, [deferredPrompt]);
 
   const handleInstallClick = async () => {
     if (isIOS) {
@@ -73,7 +92,10 @@ export default function PWAInstallPrompt() {
       return;
     }
 
-    if (!deferredPrompt) return;
+    if (!deferredPrompt) {
+      setShowIOSDrawer(true);
+      return;
+    }
 
     try {
       await deferredPrompt.prompt();
@@ -102,12 +124,11 @@ export default function PWAInstallPrompt() {
     setShowIOSDrawer(false);
   };
 
-  // If already installed or dismissed, render nothing
-  if (isInstalled || isDismissed) {
+  if (isInstalled) {
     return null;
   }
 
-  const showBanner = Boolean(deferredPrompt || isIOS);
+  const showBanner = !isDismissed && Boolean(deferredPrompt || isIOS);
 
   if (!showBanner && !showIOSDrawer) {
     return null;
@@ -128,7 +149,7 @@ export default function PWAInstallPrompt() {
           >
             <div className="pwa-banner-content">
               <img
-                src="/pwa-192x192.png"
+                src="./pwa-192x192.png"
                 alt="Rejseplanen logo"
                 className="pwa-app-icon"
                 onError={(e) => {
@@ -192,7 +213,7 @@ export default function PWAInstallPrompt() {
               <div className="pwa-drawer-header">
                 <div className="pwa-drawer-title-group">
                   <img
-                    src="/apple-touch-icon.png"
+                    src="./apple-touch-icon.png"
                     alt="Rejseplanen"
                     className="pwa-drawer-app-icon"
                     onError={(e) => {
@@ -201,10 +222,12 @@ export default function PWAInstallPrompt() {
                   />
                   <div>
                     <h2 id="pwa-drawer-title" className="pwa-drawer-title">
-                      Install on iPhone &amp; iPad
+                      {isIOS ? 'Install on iPhone & iPad' : 'Install Rejseplanen App'}
                     </h2>
                     <p className="pwa-drawer-subtitle">
-                      Add Rejseplanen to your Home Screen for the full app experience
+                      {isIOS
+                        ? 'Add Rejseplanen to your Home Screen for the full app experience'
+                        : 'Add Rejseplanen to your Home Screen or install via your browser'}
                     </p>
                   </div>
                 </div>
@@ -223,11 +246,15 @@ export default function PWAInstallPrompt() {
                   <div className="pwa-step-number">1</div>
                   <div className="pwa-step-content">
                     <p className="pwa-step-text">
-                      Tap the <strong>Share</strong> button at the bottom of Safari:
+                      {isIOS ? (
+                        <>Tap the <strong>Share</strong> button at the bottom of Safari:</>
+                      ) : (
+                        <>Tap the browser menu <strong>(⋮)</strong> or <strong>Share</strong> icon:</>
+                      )}
                     </p>
                     <div className="pwa-step-badge">
                       <Share size={18} />
-                      <span>Share</span>
+                      <span>{isIOS ? 'Share' : 'Menu / Share'}</span>
                     </div>
                   </div>
                 </div>
@@ -238,7 +265,7 @@ export default function PWAInstallPrompt() {
                   <div className="pwa-step-number">2</div>
                   <div className="pwa-step-content">
                     <p className="pwa-step-text">
-                      Scroll down and select <strong>"Add to Home Screen"</strong>:
+                      Select <strong>"Add to Home Screen"</strong> or <strong>"Install app"</strong>:
                     </p>
                     <div className="pwa-step-badge">
                       <PlusSquare size={18} />
@@ -253,10 +280,10 @@ export default function PWAInstallPrompt() {
                   <div className="pwa-step-number">3</div>
                   <div className="pwa-step-content">
                     <p className="pwa-step-text">
-                      Tap <strong>Add</strong> in the top-right corner:
+                      Confirm by tapping <strong>Install</strong> or <strong>Add</strong>:
                     </p>
                     <div className="pwa-step-badge pwa-badge-action">
-                      <span>Add</span>
+                      <span>{isIOS ? 'Add' : 'Install / Add'}</span>
                     </div>
                   </div>
                 </div>

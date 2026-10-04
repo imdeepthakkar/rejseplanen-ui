@@ -92,4 +92,32 @@ body {
   padding: 18px 20px;
 }
 
+.mac-install-btn {
+  margin-left: auto;
+  position: relative;
+  z-index: 2;
+  background: rgba(0, 122, 255, 0.12);
+  color: var(--pop);
+  border: none;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-family: var(--ui);
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mac-install-btn:hover {
+  background: rgba(0, 122, 255, 0.22);
+  transform: scale(1.03);
+}
+
+.mac-install-btn:active {
+  transform: scale(0.96);
+}
+
 

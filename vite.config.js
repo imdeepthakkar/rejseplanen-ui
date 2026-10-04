@@ -12,27 +12,27 @@ export default defineConfig({
         name: 'Rejseplanen - Copenhagen Transit',
         short_name: 'Rejseplanen',
         description: 'Live transit journey planner and departures for Copenhagen and Denmark',
-        theme_color: '#539E46',
-        background_color: '#539E46',
+        theme_color: '#007AFF',
+        background_color: '#F2F2F7',
         display: 'standalone',
         orientation: 'portrait-primary',
-        start_url: '/',
-        scope: '/',
+        start_url: '.',
+        scope: '.',
         icons: [
           {
-            src: '/pwa-192x192.png',
+            src: 'pwa-192x192.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: '/pwa-512x512.png',
+            src: 'pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: '/maskable-icon-512x512.png',
+            src: 'maskable-icon-512x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable'
