@@ -1,0 +1,71 @@
+.tabs-container {
+  display: flex;
+  gap: 8px;
+  background: var(--bg-dark);
+  padding: 6px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  border: none;
+}
+
+.tab-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 15px;
+  font-weight: 700;
+  font-family: var(--ui);
+  cursor: pointer;
+  padding: 10px 14px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.tab-item:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.tab-item.active {
+  background: white;
+  color: var(--bg);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.tab-label {
+  display: inline-block;
+}
+
+.tab-default-pin {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: inherit;
+  opacity: 0.4;
+  transition: all 0.2s ease;
+  margin-left: 2px;
+}
+
+.tab-item.active .tab-default-pin {
+  opacity: 0.65;
+}
+
+.tab-default-pin:hover {
+  opacity: 1 !important;
+  transform: scale(1.15);
+}
+
+.tab-default-pin.is-default {
+  opacity: 1 !important;
+}

@@ -1,0 +1,140 @@
+.autocomplete-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.autocomplete-input {
+  width: 100%;
+}
+
+.suggestions-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--card);
+  border-radius: 12px;
+  border: 1px solid var(--cardBorder);
+  z-index: 1000;
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  max-height: 250px;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.suggestion-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  border-radius: 8px;
+  color: var(--ink);
+  font-family: var(--ui);
+  font-weight: 500;
+  font-size: 15px;
+  transition: background 0.2s;
+}
+
+.suggestion-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.suggestion-item.loading {
+  color: var(--soft);
+  font-style: italic;
+  cursor: default;
+}
+
+.suggestion-item.loading:hover {
+  background: transparent;
+  color: var(--soft);
+  transform: none;
+}
+
+.gmaps-location-btn {
+  background: #FFFFFF;
+  border: 1px solid #DADCE0;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.15);
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.gmaps-location-btn:hover {
+  background: #F8F9FA;
+  border-color: #1A73E8;
+  box-shadow: 0 1px 4px rgba(60, 64, 67, 0.25);
+}
+
+.gmaps-location-btn:active {
+  background: #E8F0FE;
+  box-shadow: inset 0 1px 2px rgba(60, 64, 67, 0.2);
+}
+
+.gmaps-location-btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+@keyframes gmaps-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.gmaps-location-icon.is-loading {
+  animation: gmaps-spin 1.2s linear infinite;
+  transform-origin: center center;
+}
+
+.suggestion-header {
+  padding: 8px 12px 4px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6B7280;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  margin-bottom: 4px;
+}
+
+.fav-suggestion-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+}
+
+.fav-row-icon-small {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.fav-row-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.fav-row-col-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1F2937;
+}
+
+.fav-row-col-station {
+  font-size: 12px;
+  color: #6B7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+

@@ -1,0 +1,63 @@
+.offline-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2000;
+  padding: max(10px, env(safe-area-inset-top)) 16px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  font-family: var(--ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  pointer-events: auto;
+}
+
+.offline-banner-content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  max-width: 900px;
+  width: 100%;
+}
+
+.offline-banner-icon {
+  flex-shrink: 0;
+}
+
+.offline-banner-text {
+  letter-spacing: -0.01em;
+}
+
+/* Transit Amber Warning Theme for Offline */
+.offline-banner--warning {
+  background-color: #D97706;
+  color: #FFFFFF;
+  border-bottom: 1px solid #B45309;
+}
+
+.offline-banner--warning .offline-banner-icon {
+  color: #FEF3C7;
+}
+
+/* Green Confirmation Toast for Reconnection */
+.offline-banner--online {
+  background-color: #059669;
+  color: #FFFFFF;
+  border-bottom: 1px solid #047857;
+}
+
+.offline-banner--online .offline-banner-icon {
+  color: #D1FAE5;
+}
+
+@media (max-width: 600px) {
+  .offline-banner {
+    font-size: 12.5px;
+  }
+}

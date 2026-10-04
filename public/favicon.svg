@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <!-- Rejseplanen Brand Green Background -->
+  <rect width="512" height="512" rx="96" fill="#539E46"/>
+
+  <!-- Track: Sleeper and Rails -->
+  <line x1="148" y1="416" x2="364" y2="416" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round"/>
+  <line x1="180" y1="386" x2="168" y2="434" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round"/>
+  <line x1="332" y1="386" x2="344" y2="434" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round"/>
+
+  <!-- Pantograph -->
+  <rect x="226" y="76" width="60" height="8" rx="4" fill="#FFFFFF"/>
+  <polyline points="234,108 256,78 278,108" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="238" y="104" width="36" height="8" rx="3" fill="#FFFFFF"/>
+
+  <!-- Train Body -->
+  <rect x="140" y="112" width="232" height="256" rx="46" fill="#FFFFFF"/>
+
+  <!-- Destination Display Cutout -->
+  <rect x="198" y="126" width="116" height="14" rx="5" fill="#539E46"/>
+
+  <!-- Windshield Cutout -->
+  <rect x="160" y="152" width="192" height="112" rx="22" fill="#539E46"/>
+
+  <!-- Center Grille Cutout -->
+  <rect x="224" y="308" width="64" height="12" rx="5" fill="#539E46"/>
+
+  <!-- Dual Headlights -->
+  <!-- Left Headlight -->
+  <circle cx="184" cy="314" r="18" fill="#539E46"/>
+  <circle cx="184" cy="314" r="9" fill="#FEF08A"/>
+
+  <!-- Right Headlight -->
+  <circle cx="328" cy="314" r="18" fill="#539E46"/>
+  <circle cx="328" cy="314" r="9" fill="#FEF08A"/>
+</svg>

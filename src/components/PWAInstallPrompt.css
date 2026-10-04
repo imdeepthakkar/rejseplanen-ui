@@ -1,0 +1,337 @@
+/* PWA Install Prompt & iOS Safari Guide Drawer */
+
+.pwa-install-banner {
+  position: fixed;
+  bottom: max(16px, env(safe-area-inset-bottom, 16px));
+  left: 16px;
+  right: 16px;
+  margin: 0 auto;
+  max-width: 480px;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+  border-radius: 16px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  z-index: 1000;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  font-family: var(--ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+}
+
+.pwa-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.pwa-app-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  object-fit: cover;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  flex-shrink: 0;
+}
+
+.pwa-banner-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pwa-banner-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1A1A1A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pwa-banner-subtitle {
+  font-size: 12px;
+  font-weight: 500;
+  color: #666666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.pwa-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.pwa-btn-install {
+  background: #539E46;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 22px;
+  padding: 0 16px;
+  height: 44px;
+  min-width: 88px;
+  font-size: 14px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 2px 8px rgba(83, 158, 70, 0.3);
+}
+
+.pwa-btn-install:hover {
+  background: #458739;
+}
+
+.pwa-btn-install:active {
+  transform: scale(0.97);
+}
+
+.pwa-btn-icon {
+  flex-shrink: 0;
+}
+
+.pwa-btn-dismiss {
+  background: transparent;
+  color: #777777;
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.pwa-btn-dismiss:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: #1A1A1A;
+}
+
+/* iOS Safari Guide Drawer */
+.pwa-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 1001;
+}
+
+.pwa-ios-drawer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  max-width: 480px;
+  background: #FFFFFF;
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -8px 36px rgba(0, 0, 0, 0.24);
+  z-index: 1002;
+  padding: 12px 20px max(24px, env(safe-area-inset-bottom, 24px));
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-family: var(--ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+}
+
+.pwa-drawer-drag-indicator {
+  width: 38px;
+  height: 4px;
+  background: #D1D5DB;
+  border-radius: 2px;
+  margin: 4px auto 6px auto;
+}
+
+.pwa-drawer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pwa-drawer-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pwa-drawer-app-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+}
+
+.pwa-drawer-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.pwa-drawer-subtitle {
+  margin: 3px 0 0 0;
+  font-size: 13px;
+  color: #6B7280;
+  line-height: 1.35;
+}
+
+.pwa-drawer-close {
+  background: transparent;
+  color: #6B7280;
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.pwa-drawer-close:hover {
+  background: #F3F4F6;
+  color: #111827;
+}
+
+.pwa-drawer-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+
+.pwa-step-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.pwa-step-number {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #539E46;
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pwa-step-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.pwa-step-text {
+  margin: 0;
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.35;
+}
+
+.pwa-step-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #FFFFFF;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  width: fit-content;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.pwa-step-badge.pwa-badge-action {
+  background: #007AFF;
+  border-color: #007AFF;
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.pwa-step-divider {
+  height: 1px;
+  background: #E5E7EB;
+  margin: 2px 0;
+}
+
+.pwa-drawer-actions {
+  display: flex;
+  margin-top: 4px;
+}
+
+.pwa-btn-got-it {
+  width: 100%;
+  height: 48px;
+  background: #539E46;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 4px 12px rgba(83, 158, 70, 0.35);
+}
+
+.pwa-btn-got-it:hover {
+  background: #458739;
+}
+
+.pwa-btn-got-it:active {
+  transform: scale(0.98);
+}
+
+/* Small mobile screens */
+@media (max-width: 400px) {
+  .pwa-install-banner {
+    left: 8px;
+    right: 8px;
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  .pwa-banner-title {
+    font-size: 13px;
+  }
+  .pwa-banner-subtitle {
+    font-size: 11px;
+  }
+  .pwa-btn-install {
+    padding: 0 12px;
+    min-width: 76px;
+    font-size: 13px;
+  }
+}
