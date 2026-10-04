@@ -190,13 +190,13 @@
 /* Edit Card */
 .fav-edit-card {
   background: #FFFFFF;
-  border: 2px solid var(--bg);
+  border: 1.5px solid var(--pop, #007AFF);
   border-radius: 12px;
   padding: 14px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  box-shadow: 0 4px 12px rgba(83, 158, 70, 0.15);
+  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.12);
 }
 
 .fav-icon-picker {
@@ -224,8 +224,8 @@
 }
 
 .icon-option-btn.selected {
-  background: #E8F5E9;
-  border-color: var(--bg);
+  background: #EBF5FF;
+  border-color: var(--pop, #007AFF);
   transform: scale(1.1);
 }
 
@@ -248,8 +248,8 @@
 
 .fav-input:focus {
   outline: none;
-  border-color: var(--bg);
-  box-shadow: 0 0 0 2px rgba(83, 158, 70, 0.2);
+  border-color: var(--pop, #007AFF);
+  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
 }
 
 .fav-station-input-wrap {
@@ -321,32 +321,42 @@
 
 .fav-suggestion-item:hover {
   background: #F3F4F6;
-  color: var(--bg-dark);
+  color: var(--pop, #007AFF);
 }
 
 .fav-edit-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  margin-top: 6px;
+  position: relative;
+  z-index: 10;
 }
 
 .fav-save-btn {
-  background: var(--bg);
+  background: var(--pop, #007AFF);
   color: #FFFFFF;
   border: none;
   border-radius: 8px;
-  padding: 8px 14px;
+  padding: 9px 18px;
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: background 0.15s ease;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.35);
 }
 
 .fav-save-btn:hover {
-  background: var(--bg-dark);
+  background: #0062cc;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.45);
+  transform: translateY(-1px);
+}
+
+.fav-save-btn:active {
+  transform: translateY(1px);
 }
 
 .fav-cancel-btn {

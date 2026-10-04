@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Plus, Trash2, Check, MapPin } from 'lucide-react';
 import { getFavorites, saveFavorite, deleteFavorite } from '../services/storage';
-import { fetchLocation } from '../services/api';
+import { fetchLocation, fetchStopsNearby } from '../services/api';
 import GoogleMapsLocationIcon from './GoogleMapsLocationIcon';
 import './EditFavoriteModal.css';
 
@@ -16,18 +16,24 @@ export default function EditFavoriteModal({ isOpen, onClose, onFavoritesChanged 
   const [stationSuggestions, setStationSuggestions] = useState([]);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [locating, setLocating] = useState(false);
+  const justSelectedSuggestion = useRef(false);
 
   useEffect(() => {
     if (isOpen) {
       setFavorites(getFavorites());
       setEditingId(null);
       setIsAddingNew(false);
+      setStationSuggestions([]);
     }
   }, [isOpen]);
 
   useEffect(() => {
     if (!editStation || editStation.length < 2) {
       setStationSuggestions([]);
+      return;
+    }
+    if (justSelectedSuggestion.current) {
+      justSelectedSuggestion.current = false;
       return;
     }
     const timer = setTimeout(async () => {
@@ -46,12 +52,19 @@ export default function EditFavoriteModal({ isOpen, onClose, onFavoritesChanged 
 
   if (!isOpen) return null;
 
+  const handleSelectSuggestion = (name) => {
+    justSelectedSuggestion.current = true;
+    setEditStation(name);
+    setStationSuggestions([]);
+  };
+
   const handleStartEdit = (fav) => {
     setEditingId(fav.id);
     setEditLabel(fav.label);
     setEditIcon(fav.icon);
     setEditStation(fav.station || '');
     setIsAddingNew(false);
+    setStationSuggestions([]);
   };
 
   const handleStartAddNew = () => {
@@ -61,6 +74,7 @@ export default function EditFavoriteModal({ isOpen, onClose, onFavoritesChanged 
     setEditIcon('⭐');
     setEditStation('');
     setIsAddingNew(true);
+    setStationSuggestions([]);
   };
 
   const handleLocateCurrentStation = () => {
@@ -75,14 +89,11 @@ export default function EditFavoriteModal({ isOpen, onClose, onFavoritesChanged 
         const coordX = Math.round(longitude * 1000000);
         const coordY = Math.round(latitude * 1000000);
         
-        const baseUrl = './api';
-        const apiKey = import.meta.env.VITE_API_KEY || '';
-        const url = `${baseUrl}/stopsNearby?coordX=${coordX}&coordY=${coordY}&format=json${apiKey ? `&apikey=${apiKey}` : ''}`;
-        
-        const res = await fetch(url).then(r => r.json());
+        const res = await fetchStopsNearby(coordX, coordY);
         const stops = res.LocationList?.StopLocation;
         if (stops && stops.length > 0) {
           const nearest = Array.isArray(stops) ? stops[0] : stops;
+          justSelectedSuggestion.current = true;
           setEditStation(nearest.name);
           setStationSuggestions([]);
         } else {
@@ -102,16 +113,25 @@ export default function EditFavoriteModal({ isOpen, onClose, onFavoritesChanged 
   };
 
   const handleSave = () => {
-    if (!editLabel.trim()) return;
+    const finalStation = editStation.trim();
+    // If custom label is empty, default to station name
+    const finalLabel = editLabel.trim() || (finalStation ? finalStation.split(',')[0] : '');
+
+    if (!finalStation && !finalLabel) {
+      alert("Please enter a place name or station/address");
+      return;
+    }
+
     const updated = saveFavorite({
       id: editingId,
-      label: editLabel.trim(),
-      icon: editIcon,
-      station: editStation.trim()
+      label: finalLabel || 'Favorite Place',
+      icon: editIcon || '⭐',
+      station: finalStation
     });
     setFavorites(updated);
     setEditingId(null);
     setIsAddingNew(false);
+    setStationSuggestions([]);
     if (onFavoritesChanged) onFavoritesChanged(updated);
   };
 
@@ -211,9 +231,9 @@ export default function EditFavoriteModal({ isOpen, onClose, onFavoritesChanged 
                             <li
                               key={idx}
                               className="fav-suggestion-item"
-                              onClick={() => {
-                                setEditStation(s.name);
-                                setStationSuggestions([]);
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                handleSelectSuggestion(s.name);
                               }}
                             >
                               <MapPin size={14} />
@@ -330,9 +350,9 @@ export default function EditFavoriteModal({ isOpen, onClose, onFavoritesChanged 
                         <li
                           key={idx}
                           className="fav-suggestion-item"
-                          onClick={() => {
-                            setEditStation(s.name);
-                            setStationSuggestions([]);
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            handleSelectSuggestion(s.name);
                           }}
                         >
                           <MapPin size={14} />
