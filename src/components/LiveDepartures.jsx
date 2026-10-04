@@ -171,34 +171,49 @@ export default function LiveDepartures() {
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2, delay: i * 0.05 }}
                     style={{ 
-                      padding: '16px', borderBottom: '1px solid rgba(0,0,0,0.05)', 
-                      display: 'flex', alignItems: 'center', gap: '16px',
+                      padding: '1rem', borderBottom: '1px solid rgba(0,0,0,0.05)', 
+                      display: 'flex', alignItems: 'center', gap: '1rem',
                       background: i % 2 === 0 ? '#ffffff' : '#f8fafc'
                     }}
                   >
-                  <div style={{ width: '60px', fontWeight: '800', fontSize: '20px', color: 'var(--ink)' }}>
+                  <div style={{ width: '60px', fontWeight: 'bold', fontSize: '1.2em', color: 'var(--ink)' }}>
                     {d.time}
                   </div>
-                  <div style={{
-                    background: getTransportStyle(d.type, d.name).background,
-                    color: getTransportStyle(d.type, d.name).color,
-                    padding: '4px 8px',
-                    borderRadius: '6px',
-                    fontWeight: '800',
-                    fontSize: '14px',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    minWidth: '32px'
-                  }}>
-                    {d.name}
+                  <div style={{ flex: '0 0 auto' }}>
+                    <span style={{
+                      background: getTransportStyle(d.type, d.name).background,
+                      color: getTransportStyle(d.type, d.name).color,
+                      padding: '0.3rem 0.6rem',
+                      borderRadius: '4px',
+                      fontWeight: 'bold',
+                      fontSize: '14px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minWidth: '32px'
+                    }}>
+                      {d.name}
+                    </span>
                   </div>
-                  <div style={{ flex: 1, fontSize: '16px', fontWeight: '700', color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {d.direction.split(',')[0]}
+                  <div style={{ flex: '1 1 auto', fontSize: '15px', color: 'var(--ink)' }}>
+                    towards <strong>{d.direction}</strong>
+                    {d.cancelled === 'true' ? (
+                      <span style={{ color: '#e51937', marginLeft: '0.5rem', fontWeight: 'bold' }}>
+                        (Cancelled)
+                      </span>
+                    ) : d.rtTime ? (
+                      <span style={{ color: '#e51937', marginLeft: '0.5rem', fontWeight: 'bold' }}>
+                        (Expected: {d.rtTime})
+                      </span>
+                    ) : null}
                   </div>
-                  {d.track && (
-                    <div style={{ color: 'var(--sub)', fontSize: '14px', fontWeight: '600' }}>
-                      Trk {d.track}
+                  {(d.rtTrack || d.track) && (
+                    <div style={{ 
+                      color: d.rtTrack && d.rtTrack !== d.track ? '#e51937' : 'var(--sub)', 
+                      fontSize: '14px', 
+                      fontWeight: '600' 
+                    }}>
+                      Trk {d.rtTrack || d.track}
                     </div>
                   )}
                 </motion.li>
