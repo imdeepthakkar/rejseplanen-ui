@@ -71,7 +71,7 @@
 }
 
 .pwa-btn-install {
-  background: #539E46;
+  background: var(--pop, #007AFF);
   color: #FFFFFF;
   border: none;
   border-radius: 22px;
@@ -86,11 +86,11 @@
   gap: 6px;
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.1s ease;
-  box-shadow: 0 2px 8px rgba(83, 158, 70, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
 }
 
 .pwa-btn-install:hover {
-  background: #458739;
+  background: #0062cc;
 }
 
 .pwa-btn-install:active {
@@ -292,7 +292,7 @@
 .pwa-btn-got-it {
   width: 100%;
   height: 48px;
-  background: #539E46;
+  background: var(--pop, #007AFF);
   color: #FFFFFF;
   border: none;
   border-radius: 12px;
@@ -304,11 +304,11 @@
   justify-content: center;
   gap: 8px;
   transition: background-color 0.2s ease, transform 0.1s ease;
-  box-shadow: 0 4px 12px rgba(83, 158, 70, 0.35);
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.35);
 }
 
 .pwa-btn-got-it:hover {
-  background: #458739;
+  background: #0062cc;
 }
 
 .pwa-btn-got-it:active {

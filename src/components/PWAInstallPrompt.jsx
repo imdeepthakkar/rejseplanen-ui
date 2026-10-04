@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Download, X, Share, PlusSquare, Check } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Download, X, Share, PlusSquare, Check, Monitor } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './PWAInstallPrompt.css';
 
@@ -8,7 +8,9 @@ export default function PWAInstallPrompt() {
   const [isDismissed, setIsDismissed] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isIOS, setIsIOS] = useState(false);
+  const [platform, setPlatform] = useState('desktop');
   const [showIOSDrawer, setShowIOSDrawer] = useState(false);
+  const deferredPromptRef = useRef(null);
 
   useEffect(() => {
     // 1. Check if already installed in standalone mode
@@ -22,50 +24,60 @@ export default function PWAInstallPrompt() {
       return;
     }
 
-    // 2. Check if previously dismissed by the user
+    // 2. Check if banner was dismissed (only hides banner, does not stop manual triggers)
     try {
       if (localStorage.getItem('pwa_prompt_dismissed') === 'true') {
         setIsDismissed(true);
-        return;
       }
     } catch (e) {
       // Storage access blocked or restricted
     }
 
-    // 3. Detect iOS Safari
-    const ua = navigator.userAgent;
-    const isIOSDevice =
+    // 3. Detect platform
+    const ua = navigator.userAgent || '';
+    if (
       /iPhone|iPad|iPod/.test(ua) ||
-      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-    if (isIOSDevice) {
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+    ) {
       setIsIOS(true);
+      setPlatform('ios');
+    } else if (/Android/.test(ua)) {
+      setPlatform('android');
+    } else if (/Win/i.test(ua) || /Windows/i.test(navigator.platform || '')) {
+      setPlatform('windows');
+    } else {
+      setPlatform('desktop');
     }
 
-    // 4. Capture Chromium/Android install prompt
+    // 4. Capture Chromium/Android/Windows install prompt
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
+      deferredPromptRef.current = e;
       setDeferredPrompt(e);
     };
 
     const handleAppInstalled = () => {
       setIsInstalled(true);
+      deferredPromptRef.current = null;
       setDeferredPrompt(null);
     };
 
-    // Support manual trigger for debugging/e2e testing or titlebar button
+    // Support manual trigger from titlebar or external event
     const handleManualOpen = () => setShowIOSDrawer(true);
     const handleTriggerInstall = async () => {
-      if (deferredPrompt) {
+      const promptEvent = deferredPromptRef.current;
+      if (promptEvent) {
         try {
-          await deferredPrompt.prompt();
-          const choiceResult = await deferredPrompt.userChoice;
+          await promptEvent.prompt();
+          const choiceResult = await promptEvent.userChoice;
           if (choiceResult && choiceResult.outcome === 'accepted') {
             setIsInstalled(true);
           }
         } catch (err) {
           console.error('Error triggering PWA install prompt:', err);
+          setShowIOSDrawer(true);
         } finally {
+          deferredPromptRef.current = null;
           setDeferredPrompt(null);
         }
       } else {
@@ -84,7 +96,7 @@ export default function PWAInstallPrompt() {
       window.removeEventListener('pwa-show-ios-guide', handleManualOpen);
       window.removeEventListener('pwa-trigger-install', handleTriggerInstall);
     };
-  }, [deferredPrompt]);
+  }, []);
 
   const handleInstallClick = async () => {
     if (isIOS) {
@@ -92,20 +104,23 @@ export default function PWAInstallPrompt() {
       return;
     }
 
-    if (!deferredPrompt) {
+    const promptEvent = deferredPromptRef.current;
+    if (!promptEvent) {
       setShowIOSDrawer(true);
       return;
     }
 
     try {
-      await deferredPrompt.prompt();
-      const choiceResult = await deferredPrompt.userChoice;
+      await promptEvent.prompt();
+      const choiceResult = await promptEvent.userChoice;
       if (choiceResult && choiceResult.outcome === 'accepted') {
         setIsInstalled(true);
       }
     } catch (err) {
       console.error('Error triggering PWA install prompt:', err);
+      setShowIOSDrawer(true);
     } finally {
+      deferredPromptRef.current = null;
       setDeferredPrompt(null);
     }
   };
@@ -222,12 +237,16 @@ export default function PWAInstallPrompt() {
                   />
                   <div>
                     <h2 id="pwa-drawer-title" className="pwa-drawer-title">
-                      {isIOS ? 'Install on iPhone & iPad' : 'Install Rejseplanen App'}
+                      {platform === 'ios' && 'Install on iPhone & iPad'}
+                      {platform === 'windows' && 'Install on Windows'}
+                      {platform === 'android' && 'Install on Android'}
+                      {platform === 'desktop' && 'Install Rejseplanen App'}
                     </h2>
                     <p className="pwa-drawer-subtitle">
-                      {isIOS
-                        ? 'Add Rejseplanen to your Home Screen for the full app experience'
-                        : 'Add Rejseplanen to your Home Screen or install via your browser'}
+                      {platform === 'ios' && 'Add Rejseplanen to your Home Screen for the full app experience'}
+                      {platform === 'windows' && 'Install Rejseplanen as a desktop app in Chrome or Edge'}
+                      {platform === 'android' && 'Add Rejseplanen to your home screen for instant transit access'}
+                      {platform === 'desktop' && 'Install Rejseplanen to your device for quick offline access'}
                     </p>
                   </div>
                 </div>
@@ -242,51 +261,99 @@ export default function PWAInstallPrompt() {
               </div>
 
               <div className="pwa-drawer-steps">
-                <div className="pwa-step-item">
-                  <div className="pwa-step-number">1</div>
-                  <div className="pwa-step-content">
-                    <p className="pwa-step-text">
-                      {isIOS ? (
-                        <>Tap the <strong>Share</strong> button at the bottom of Safari:</>
-                      ) : (
-                        <>Tap the browser menu <strong>(⋮)</strong> or <strong>Share</strong> icon:</>
-                      )}
-                    </p>
-                    <div className="pwa-step-badge">
-                      <Share size={18} />
-                      <span>{isIOS ? 'Share' : 'Menu / Share'}</span>
+                {platform === 'windows' ? (
+                  <>
+                    <div className="pwa-step-item">
+                      <div className="pwa-step-number">1</div>
+                      <div className="pwa-step-content">
+                        <p className="pwa-step-text">
+                          Look for the <strong>Install</strong> icon in your browser address bar:
+                        </p>
+                        <div className="pwa-step-badge">
+                          <Download size={18} />
+                          <span>Address bar (⤓ or ⊞)</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
 
-                <div className="pwa-step-divider" />
+                    <div className="pwa-step-divider" />
 
-                <div className="pwa-step-item">
-                  <div className="pwa-step-number">2</div>
-                  <div className="pwa-step-content">
-                    <p className="pwa-step-text">
-                      Select <strong>"Add to Home Screen"</strong> or <strong>"Install app"</strong>:
-                    </p>
-                    <div className="pwa-step-badge">
-                      <PlusSquare size={18} />
-                      <span>Add to Home Screen</span>
+                    <div className="pwa-step-item">
+                      <div className="pwa-step-number">2</div>
+                      <div className="pwa-step-content">
+                        <p className="pwa-step-text">
+                          Or open browser menu <strong>(⋮ or ...)</strong> &gt; <strong>"Install Rejseplanen"</strong>:
+                        </p>
+                        <div className="pwa-step-badge">
+                          <PlusSquare size={18} />
+                          <span>Install Rejseplanen</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
 
-                <div className="pwa-step-divider" />
+                    <div className="pwa-step-divider" />
 
-                <div className="pwa-step-item">
-                  <div className="pwa-step-number">3</div>
-                  <div className="pwa-step-content">
-                    <p className="pwa-step-text">
-                      Confirm by tapping <strong>Install</strong> or <strong>Add</strong>:
-                    </p>
-                    <div className="pwa-step-badge pwa-badge-action">
-                      <span>{isIOS ? 'Add' : 'Install / Add'}</span>
+                    <div className="pwa-step-item">
+                      <div className="pwa-step-number">3</div>
+                      <div className="pwa-step-content">
+                        <p className="pwa-step-text">
+                          Click <strong>Install</strong> to add Rejseplanen to your Taskbar &amp; Start menu:
+                        </p>
+                        <div className="pwa-step-badge pwa-badge-action">
+                          <span>Install</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="pwa-step-item">
+                      <div className="pwa-step-number">1</div>
+                      <div className="pwa-step-content">
+                        <p className="pwa-step-text">
+                          {isIOS ? (
+                            <>Tap the <strong>Share</strong> button at the bottom of Safari:</>
+                          ) : (
+                            <>Tap the browser menu <strong>(⋮)</strong> or <strong>Share</strong> icon:</>
+                          )}
+                        </p>
+                        <div className="pwa-step-badge">
+                          <Share size={18} />
+                          <span>{isIOS ? 'Share' : 'Menu / Share'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pwa-step-divider" />
+
+                    <div className="pwa-step-item">
+                      <div className="pwa-step-number">2</div>
+                      <div className="pwa-step-content">
+                        <p className="pwa-step-text">
+                          Select <strong>"Add to Home Screen"</strong> or <strong>"Install app"</strong>:
+                        </p>
+                        <div className="pwa-step-badge">
+                          <PlusSquare size={18} />
+                          <span>Add to Home Screen</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pwa-step-divider" />
+
+                    <div className="pwa-step-item">
+                      <div className="pwa-step-number">3</div>
+                      <div className="pwa-step-content">
+                        <p className="pwa-step-text">
+                          Confirm by tapping <strong>Install</strong> or <strong>Add</strong>:
+                        </p>
+                        <div className="pwa-step-badge pwa-badge-action">
+                          <span>{isIOS ? 'Add' : 'Install / Add'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="pwa-drawer-actions">
