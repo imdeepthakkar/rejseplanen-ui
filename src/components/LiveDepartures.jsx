@@ -171,9 +171,9 @@ export default function LiveDepartures() {
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2, delay: i * 0.05 }}
                     style={{ 
-                      padding: '16px', borderBottom: '1px solid var(--cardBorder)', 
+                      padding: '16px', borderBottom: '1px solid rgba(0,0,0,0.05)', 
                       display: 'flex', alignItems: 'center', gap: '16px',
-                      background: '#FFFFFF'
+                      background: i % 2 === 0 ? '#ffffff' : '#f8fafc'
                     }}
                   >
                   <div style={{ width: '60px', fontWeight: '800', fontSize: '20px', color: 'var(--ink)' }}>

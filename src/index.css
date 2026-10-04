@@ -1,17 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap');
 
 :root {
-  --bg: #539E46; /* Citymapper Green */
-  --bg-dark: #458739;
-  --ink: #333333;
-  --sub: #666666;
-  --soft: #999999;
-  --card: #FFFFFF;
+  --bg: #F2F2F7;
+  --ink: #000000;
+  --sub: #8E8E93;
+  --soft: #C7C7CC;
+  --card: rgba(255, 255, 255, 0.7);
   --cardSolid: #FFFFFF;
-  --cardBorder: #E0E0E0;
-  --pop: #539E46; /* Green accent */
-  --ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --disp: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --pop: #007AFF;
+  --ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --disp: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --sh: 0 1px 3px rgba(0,0,0,.1);
+  --shBig: 0 8px 30px rgba(0,0,0,.12);
+  --cardBorder: rgba(0, 0, 0, 0.08);
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -27,55 +28,68 @@ body {
 }
 
 .modern-bg {
-  position: fixed; inset: 0; z-index: 0;
-  background-color: var(--bg);
+  position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 0;
+  background: radial-gradient(circle at 15% 10%, rgba(0,122,255,.4), transparent 40%),
+              radial-gradient(circle at 85% 20%, rgba(90,200,250,.5), transparent 50%),
+              radial-gradient(circle at 50% 80%, rgba(52,199,89,.3), transparent 60%);
+  background-color: #e0f2fe;
+  filter: blur(50px) saturate(120%);
 }
 
-
-
 .app-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  position: relative;
-  z-index: 3;
+  display: flex; flex-direction: column; min-height: 100vh; position: relative; z-index: 3;
 }
 
 .main-content {
-  width: 100%;
-  max-width: 680px;
+  padding: max(14px, env(safe-area-inset-top)) 16px calc(42px + env(safe-area-inset-bottom));
+  max-width: 540px;
   margin: 0 auto;
-  padding: max(16px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+  width: 100%;
 }
 
-.brand-header {
-  text-align: center;
-  margin-bottom: 32px;
+.mac-window {
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 12px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.4) inset;
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.brand-header h1 {
-  font-family: var(--disp); font-weight: 800; font-size: clamp(28px, 8vw, 36px);
-  line-height: 1.1; letter-spacing: -0.02em; color: #FFFFFF;
-  margin: 0;
+.mac-titlebar {
+  height: 38px;
+  background: rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  position: relative;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-.brand-subtitle {
-  color: rgba(255, 255, 255, 0.8);
-  margin-top: 8px;
-  font-size: 14px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  font-weight: 600;
+.mac-buttons {
+  display: flex;
+  gap: 8px;
 }
 
-.dashboard-card {
-  /* No main wrapping card, let the individual cards float on the green background */
-  background: transparent;
-  border-radius: 0;
-  box-shadow: none;
-  border: none;
+.mac-btn {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
 }
 
-.dashboard-content {
-  padding: 0;
+.mac-btn.close { background: #ff5f56; border: 1px solid #E0443E; }
+.mac-btn.min { background: #ffbd2e; border: 1px solid #DEA123; }
+.mac-btn.max { background: #27c93f; border: 1px solid #1AAB29; }
+
+.mac-title {
+  position: absolute; left: 0; right: 0; text-align: center;
+  font-family: var(--ui); font-weight: 600; font-size: 13px; color: rgba(0, 0, 0, 0.7);
+  pointer-events: none;
 }
+
+.mac-content {
+  padding: 18px 20px;
+}
+
+

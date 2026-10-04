@@ -207,58 +207,45 @@ export default function JourneyPlanner() {
                           setShowMapForJourney(null);
                         }
                       }}
-                      style={{ padding: '16px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                      style={{ padding: '16px', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '8px' }}
                     >
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
-                          {transportLegs.map((leg, idx) => {
-                            const isWalk = leg.type === 'WALK';
-                            return (
-                              <React.Fragment key={idx}>
-                                {isWalk ? (
-                                  <span style={{ color: '#888', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 4v16M17 8l-4-4-4 4"/></svg>
-                                    Walk
-                                  </span>
-                                ) : (
-                                  <span style={{
-                                    background: getTransportStyle(leg.type, leg.name).background,
-                                    color: getTransportStyle(leg.type, leg.name).color,
-                                    padding: '4px 8px',
-                                    borderRadius: '6px',
-                                    fontWeight: '800',
-                                    fontSize: '14px',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    minWidth: '32px'
-                                  }}>
-                                    {leg.name}
-                                  </span>
-                                )}
-                                {idx < transportLegs.length - 1 && <span style={{ color: '#ccc', margin: '0 2px' }}>•</span>}
-                              </React.Fragment>
-                            );
-                          })}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <div style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--ink)' }}>
+                          {start.Origin.time} - Arrive at: {end.Destination.time}
                         </div>
-                        <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--ink)' }}>
-                          {start.Origin.time}
-                          <span style={{ color: 'var(--soft)', fontWeight: '500', fontSize: '15px', marginLeft: '8px' }}>
-                            {end.Destination.name.split(',')[0]}
-                          </span>
-                        </div>
-                        <div style={{ fontSize: '14px', color: 'var(--sub)', marginTop: '4px' }}>
-                          {start.Origin.time} - {end.Destination.time}
+                        <div style={{ fontSize: '0.95rem', color: 'var(--sub)', display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
+                          <span><strong>Total:</strong> {stats.totalMins} min</span>
                         </div>
                       </div>
-                      
-                      <div style={{ textAlign: 'center', paddingLeft: '16px' }}>
-                        <div style={{ fontSize: '36px', fontWeight: '800', color: 'var(--bg-dark)', lineHeight: '1' }}>
-                          {stats.totalMins}
-                        </div>
-                        <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--bg-dark)' }}>
-                          min
-                        </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        {transportLegs.map((leg, idx) => {
+                          const isWalk = leg.type === 'WALK';
+                          return (
+                            <React.Fragment key={idx}>
+                              {isWalk ? (
+                                <span style={{ color: '#888', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  Walk
+                                </span>
+                              ) : (
+                                <span style={{
+                                  background: getTransportStyle(leg.type, leg.name).background,
+                                  color: getTransportStyle(leg.type, leg.name).color,
+                                  padding: '3px 7px',
+                                  borderRadius: '5px',
+                                  fontWeight: '700',
+                                  fontSize: '13px',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
+                                }}>
+                                  {leg.name}
+                                </span>
+                              )}
+                              {idx < transportLegs.length - 1 && <span style={{ color: '#ccc', margin: '0 2px' }}>•</span>}
+                            </React.Fragment>
+                          );
+                        })}
                       </div>
                     </div>
                     

@@ -1,11 +1,10 @@
 .tabs-container {
   display: flex;
-  gap: 8px;
-  background: var(--bg-dark);
-  padding: 6px;
-  border-radius: 12px;
-  margin-bottom: 24px;
-  border: none;
+  gap: 2px;
+  background: rgba(118, 118, 128, 0.12);
+  padding: 2px;
+  border-radius: 8px;
+  margin-bottom: 16px;
 }
 
 .tab-item {
@@ -13,29 +12,30 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   background: transparent;
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 15px;
-  font-weight: 700;
+  border: none;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 500;
   font-family: var(--ui);
   cursor: pointer;
-  padding: 10px 14px;
-  border-radius: 8px;
+  padding: 6px 12px;
+  border-radius: 6px;
   transition: all 0.2s ease;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
 }
 
 .tab-item:hover {
-  color: white;
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--ink);
 }
 
 .tab-item.active {
-  background: white;
-  color: var(--bg);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  background: #ffffff;
+  color: var(--ink);
+  font-weight: 600;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12), 0 3px 1px rgba(0, 0, 0, 0.04);
 }
 
 .tab-label {
