@@ -140,7 +140,7 @@ export default function LiveDepartures() {
       {error && <div style={{ color: 'red', padding: '1rem' }}>{error}</div>}
       
       {departures && (
-        <div style={{ padding: '0 2rem 2rem' }}>
+        <div style={{ padding: '0 4px 16px' }}>
           <div style={{ marginBottom: '16px' }}>
             <h3 style={{ margin: 0, color: 'var(--ink)' }}>Live Departures</h3>
             {resolvedStop && (
@@ -171,22 +171,27 @@ export default function LiveDepartures() {
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2, delay: i * 0.05 }}
                     style={{ 
-                      padding: '1rem', borderBottom: '1px solid rgba(0,0,0,0.05)', 
-                      display: 'flex', alignItems: 'center', gap: '1rem',
-                      background: i % 2 === 0 ? '#ffffff' : '#f8fafc'
+                      padding: '12px 14px', 
+                      borderBottom: '1px solid rgba(0,0,0,0.05)', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '10px',
+                      background: i % 2 === 0 ? '#ffffff' : '#f8fafc',
+                      borderRadius: '8px',
+                      marginBottom: '4px'
                     }}
                   >
-                  <div style={{ width: '60px', fontWeight: 'bold', fontSize: '1.2em', color: 'var(--ink)' }}>
+                  <div style={{ flex: '0 0 52px', fontWeight: '700', fontSize: '16px', color: 'var(--ink)' }}>
                     {d.time}
                   </div>
                   <div style={{ flex: '0 0 auto' }}>
                     <span style={{
                       background: getTransportStyle(d.type, d.name).background,
                       color: getTransportStyle(d.type, d.name).color,
-                      padding: '0.3rem 0.6rem',
-                      borderRadius: '4px',
-                      fontWeight: 'bold',
-                      fontSize: '14px',
+                      padding: '3px 7px',
+                      borderRadius: '5px',
+                      fontWeight: '700',
+                      fontSize: '13px',
                       display: 'inline-flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -195,23 +200,34 @@ export default function LiveDepartures() {
                       {d.name}
                     </span>
                   </div>
-                  <div style={{ flex: '1 1 auto', fontSize: '15px', color: 'var(--ink)' }}>
-                    towards <strong>{d.direction}</strong>
+                  <div style={{ flex: '1 1 auto', minWidth: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <div style={{ 
+                      fontSize: '14px', 
+                      color: 'var(--ink)', 
+                      lineHeight: '1.25',
+                      whiteSpace: 'nowrap', 
+                      overflow: 'hidden', 
+                      textOverflow: 'ellipsis' 
+                    }}>
+                      towards <strong>{d.direction}</strong>
+                    </div>
                     {d.cancelled === 'true' ? (
-                      <span style={{ color: '#e51937', marginLeft: '0.5rem', fontWeight: 'bold' }}>
+                      <span style={{ color: '#e51937', fontSize: '12px', fontWeight: '700' }}>
                         (Cancelled)
                       </span>
                     ) : d.rtTime ? (
-                      <span style={{ color: '#e51937', marginLeft: '0.5rem', fontWeight: 'bold' }}>
+                      <span style={{ color: '#e51937', fontSize: '12px', fontWeight: '700' }}>
                         (Expected: {d.rtTime})
                       </span>
                     ) : null}
                   </div>
                   {(d.rtTrack || d.track) && (
                     <div style={{ 
+                      flex: '0 0 auto',
                       color: d.rtTrack && d.rtTrack !== d.track ? '#e51937' : 'var(--sub)', 
-                      fontSize: '14px', 
-                      fontWeight: '600' 
+                      fontSize: '12px', 
+                      fontWeight: '600',
+                      whiteSpace: 'nowrap'
                     }}>
                       Trk {d.rtTrack || d.track}
                     </div>
