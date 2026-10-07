@@ -34,8 +34,16 @@ export async function fetchJourney(fromLoc, toLoc, dateStr, timeStr) {
     return fetchJson(url);
 }
 
-export async function fetchDepartures(stationId) {
-    return fetchJson(`/departureBoard?id=${stationId}`);
+export async function fetchDepartures(stationId, timeStr, dateStr) {
+    let url = `/departureBoard?id=${stationId}`;
+    if (timeStr) {
+        url += `&time=${timeStr}`;
+    }
+    if (dateStr) {
+        const [yyyy, mm, dd] = dateStr.split('-');
+        url += `&date=${dd}.${mm}.${yyyy.slice(2)}`;
+    }
+    return fetchJson(url);
 }
 
 export async function fetchStopsNearby(coordX, coordY) {

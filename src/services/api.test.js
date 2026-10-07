@@ -59,6 +59,25 @@ describe('api service', () => {
         expect(result).toEqual(mockResponse);
     });
 
+    it('fetchDepartures passes time and date when provided', async () => {
+        const mockResponse = { DepartureBoard: { Departure: [] } };
+        let requestedUrl = null;
+
+        globalThis.fetch = async (url) => {
+            requestedUrl = url;
+            return {
+                ok: true,
+                json: async () => mockResponse,
+            };
+        };
+
+        const result = await fetchDepartures('8600626', '19:30', '2026-10-07');
+        expect(requestedUrl).toBe(
+            './api/departureBoard?id=8600626&time=19:30&date=07.10.26&format=json'
+        );
+        expect(result).toEqual(mockResponse);
+    });
+
     it('fetchStopsNearby fetches nearby stops with coordinates', async () => {
         const mockResponse = { LocationList: { StopLocation: [{ name: 'Elmegade', id: '45740' }] } };
         let requestedUrl = null;
