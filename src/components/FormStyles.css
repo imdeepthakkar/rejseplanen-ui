@@ -83,4 +83,69 @@
   transform: scale(0.95);
 }
 
+.home-setup-banner {
+  margin-top: 14px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 122, 255, 0.2);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.home-setup-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.home-setup-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.home-setup-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.home-setup-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.home-setup-desc {
+  font-size: 13px;
+  color: var(--sub);
+  line-height: 1.35;
+}
+
+.home-setup-action-btn {
+  background: var(--pop);
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--ui);
+  cursor: pointer;
+  align-self: flex-start;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.home-setup-action-btn:hover {
+  opacity: 0.9;
+}
+
+.home-setup-action-btn:active {
+  transform: scale(0.97);
+}
+
 

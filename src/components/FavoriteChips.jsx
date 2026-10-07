@@ -4,9 +4,17 @@ import { getFavorites } from '../services/storage';
 import EditFavoriteModal from './EditFavoriteModal';
 import './FavoriteChips.css';
 
-export default function FavoriteChips({ onSelect }) {
+export default function FavoriteChips({
+  onSelect,
+  isModalOpen: controlledModalOpen,
+  setIsModalOpen: controlledSetModalOpen,
+  onFavoritesChanged: onExternalFavoritesChanged,
+}) {
   const [favorites, setFavorites] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [internalModalOpen, setInternalModalOpen] = useState(false);
+
+  const isModalOpen = controlledModalOpen !== undefined ? controlledModalOpen : internalModalOpen;
+  const setIsModalOpen = controlledSetModalOpen || setInternalModalOpen;
 
   const loadFavorites = () => {
     setFavorites(getFavorites());
@@ -62,7 +70,10 @@ export default function FavoriteChips({ onSelect }) {
       <EditFavoriteModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onFavoritesChanged={(updated) => setFavorites(updated)}
+        onFavoritesChanged={(updated) => {
+          setFavorites(updated);
+          if (onExternalFavoritesChanged) onExternalFavoritesChanged(updated);
+        }}
       />
     </>
   );

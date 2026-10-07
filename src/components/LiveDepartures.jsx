@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { fetchLocation, fetchDepartures, fetchStopsNearby } from '../services/api';
+import { getFavorites } from '../services/storage';
 import { getTransportStyle } from '../utils/transportStyles';
 import { motion, AnimatePresence } from 'framer-motion';
 import AutocompleteInput from './AutocompleteInput';
@@ -12,6 +13,21 @@ export default function LiveDepartures() {
   const [resolvedStop, setResolvedStop] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [homeStation, setHomeStation] = useState('');
+
+  useEffect(() => {
+    const favs = getFavorites();
+    const home = favs.find(f => f.id === 'home');
+    const homeAddr = home?.station?.trim();
+    if (homeAddr) {
+      setStation(homeAddr);
+      setHomeStation(homeAddr);
+      loadDepartures(homeAddr);
+    } else {
+      setHomeStation('');
+    }
+  }, []);
 
   const loadDepartures = async (query) => {
     if (!query || !query.trim()) return;
@@ -122,6 +138,16 @@ export default function LiveDepartures() {
     loadDepartures(selectedStation);
   };
 
+  const handleFavoritesChanged = (updatedFavs) => {
+    const home = updatedFavs.find(f => f.id === 'home');
+    const homeAddr = home?.station?.trim() || '';
+    setHomeStation(homeAddr);
+    if (homeAddr && (!station || !departures)) {
+      setStation(homeAddr);
+      loadDepartures(homeAddr);
+    }
+  };
+
   return (
     <div>
       <form onSubmit={handleSubmit} className="form-group">
@@ -131,12 +157,38 @@ export default function LiveDepartures() {
           onChange={setStation} 
           required={true}
         />
-        <FavoriteChips onSelect={handleSelectFavorite} />
+        <FavoriteChips 
+          onSelect={handleSelectFavorite}
+          isModalOpen={isModalOpen}
+          setIsModalOpen={setIsModalOpen}
+          onFavoritesChanged={handleFavoritesChanged}
+        />
         <button type="submit" className="submit-btn" disabled={loading}>
           {loading ? 'Loading...' : 'Show Departures'}
         </button>
       </form>
       
+      {!homeStation && !departures && !loading && !error && (
+        <div className="home-setup-banner">
+          <div className="home-setup-content">
+            <span className="home-setup-icon">🏠</span>
+            <div className="home-setup-text">
+              <span className="home-setup-title">No Home station set</span>
+              <span className="home-setup-desc">
+                Configure your home address to see live departures automatically as soon as you open the app.
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="home-setup-action-btn"
+            onClick={() => setIsModalOpen(true)}
+          >
+            Set Home Address
+          </button>
+        </div>
+      )}
+
       {error && <div style={{ color: 'red', padding: '1rem' }}>{error}</div>}
       
       {departures && (
