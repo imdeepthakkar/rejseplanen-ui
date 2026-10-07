@@ -9,9 +9,9 @@ export const INITIAL_FAVORITES = [
 export function getDefaultTab() {
   try {
     const tab = localStorage.getItem(DEFAULT_TAB_KEY);
-    return tab === 'departures' ? 'departures' : 'journey';
+    return tab === 'journey' ? 'journey' : 'departures';
   } catch (err) {
-    return 'journey';
+    return 'departures';
   }
 }
 

@@ -21,11 +21,13 @@ describe('storage service', () => {
     localStorageMock.clear();
   });
 
-  it('returns journey as default tab when unset', () => {
-    expect(getDefaultTab()).toBe('journey');
+  it('returns departures as default tab when unset', () => {
+    expect(getDefaultTab()).toBe('departures');
   });
 
   it('persists and retrieves default tab', () => {
+    setDefaultTab('journey');
+    expect(getDefaultTab()).toBe('journey');
     setDefaultTab('departures');
     expect(getDefaultTab()).toBe('departures');
   });
