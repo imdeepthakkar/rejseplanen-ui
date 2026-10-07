@@ -2,25 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { fetchLocation, fetchDepartures, fetchStopsNearby } from '../services/api';
 import { getFavorites } from '../services/storage';
 import { getTransportStyle } from '../utils/transportStyles';
+import { timeToMinutes, timeDifferenceMinutes } from '../utils/timeHelpers';
 import { motion, AnimatePresence } from 'framer-motion';
 import AutocompleteInput from './AutocompleteInput';
 import FavoriteChips from './FavoriteChips';
 import './FormStyles.css';
-
-function timeToMinutes(timeStr) {
-  if (!timeStr) return 0;
-  const [h, m] = timeStr.split(':').map(Number);
-  return h * 60 + m;
-}
-
-function timeDifferenceMinutes(startStr, endStr) {
-  let start = timeToMinutes(startStr);
-  let end = timeToMinutes(endStr);
-  if (end < start) {
-    end += 24 * 60; // wrapped midnight
-  }
-  return end - start;
-}
 
 function getDepartureKey(d) {
   return `${d.date || ''}_${d.time}_${d.name}_${d.direction}_${d.track || d.rtTrack || ''}`;
@@ -139,8 +125,8 @@ export default function LiveDepartures() {
       });
       setResolvedStopId(targetStop.id);
 
-      // 2. Get departures window covering at least 60 minutes
-      const deps = await fetchDeparturesWindow(targetStop.id, [], 60, 4);
+      // 2. Get departures window covering at least 30 minutes
+      const deps = await fetchDeparturesWindow(targetStop.id, [], 30, 3);
       setDepartures(deps);
     } catch (err) {
       setError(err.message || 'Failed to fetch departures');
@@ -149,7 +135,7 @@ export default function LiveDepartures() {
     }
   };
 
-  const fetchDeparturesWindow = async (stopId, startDeps = [], minSpanMinutes = 60, maxBatches = 4) => {
+  const fetchDeparturesWindow = async (stopId, startDeps = [], minSpanMinutes = 30, maxBatches = 3) => {
     let combined = [...startDeps];
     let seen = new Set(combined.map(getDepartureKey));
     let batches = 0;

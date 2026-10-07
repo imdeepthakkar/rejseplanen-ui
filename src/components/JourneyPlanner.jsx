@@ -2,11 +2,24 @@ import React, { useState } from 'react';
 import { ArrowUpDown } from 'lucide-react';
 import { fetchLocation, fetchJourney } from '../services/api';
 import { getTransportStyle } from '../utils/transportStyles';
+import { timeToMinutes, timeDifferenceMinutes } from '../utils/timeHelpers';
 import { motion, AnimatePresence } from 'framer-motion';
 import AutocompleteInput from './AutocompleteInput';
 import FavoriteChips from './FavoriteChips';
 import MapView from './MapView';
 import './FormStyles.css';
+
+function getTripDepartureTime(trip) {
+  const legs = Array.isArray(trip.Leg) ? trip.Leg : [trip.Leg];
+  return legs[0]?.Origin?.time || '';
+}
+
+function getTripKey(trip) {
+  const legs = Array.isArray(trip.Leg) ? trip.Leg : [trip.Leg];
+  const start = legs[0];
+  const end = legs[legs.length - 1];
+  return `${start.Origin.date || ''}_${start.Origin.time}_${start.Origin.name}_${end.Destination.time}_${end.Destination.name}`;
+}
 
 export default function JourneyPlanner() {
   const now = new Date();
@@ -21,6 +34,8 @@ export default function JourneyPlanner() {
   const [time, setTime] = useState(defaultTime);
   const [journeys, setJourneys] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [loadingLater, setLoadingLater] = useState(false);
+  const [loadingEarlier, setLoadingEarlier] = useState(false);
   const [error, setError] = useState('');
   const [expandedJourney, setExpandedJourney] = useState(null);
   
@@ -71,15 +86,114 @@ export default function JourneyPlanner() {
       setSearchedFromLoc(fromLoc);
       setSearchedToLoc(toLoc);
 
-      // 3. Get journey
-      const tripRes = await fetchJourney(fromLoc, toLoc, date, time);
-      const trips = tripRes.TripList?.Trip || [];
-      const parsedTrips = Array.isArray(trips) ? trips : [trips];
+      // 3. Get journeys covering at least 30 minutes
+      const parsedTrips = await fetchJourneysWindow(fromLoc, toLoc, date, time, 30, 2);
       setJourneys(parsedTrips);
     } catch (err) {
       setError(err.message || 'Failed to fetch journey');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchJourneysWindow = async (fromLocation, toLocation, searchDate, initialTime, minSpanMinutes = 30, maxBatches = 2) => {
+    let combined = [];
+    let seen = new Set();
+    let currentTime = initialTime;
+    let batches = 0;
+
+    while (batches < maxBatches) {
+      batches++;
+      const tripRes = await fetchJourney(fromLocation, toLocation, searchDate, currentTime);
+      const rawTrips = tripRes.TripList?.Trip || [];
+      const batchTrips = Array.isArray(rawTrips) ? rawTrips : [rawTrips];
+
+      if (batchTrips.length === 0) break;
+
+      let newItemsAdded = 0;
+      for (const t of batchTrips) {
+        const key = getTripKey(t);
+        if (!seen.has(key)) {
+          seen.add(key);
+          combined.push(t);
+          newItemsAdded++;
+        }
+      }
+
+      if (newItemsAdded === 0) break;
+
+      const firstTime = getTripDepartureTime(combined[0]);
+      const lastTime = getTripDepartureTime(combined[combined.length - 1]);
+      if (firstTime && lastTime && timeDifferenceMinutes(firstTime, lastTime) >= minSpanMinutes) {
+        break;
+      }
+
+      currentTime = lastTime;
+    }
+
+    return combined;
+  };
+
+  const handleLoadLaterJourneys = async () => {
+    if (!searchedFromLoc || !searchedToLoc || !journeys || journeys.length === 0 || loadingLater) return;
+    setLoadingLater(true);
+    try {
+      const lastTrip = journeys[journeys.length - 1];
+      const lastTime = getTripDepartureTime(lastTrip);
+
+      // Fetch next 30 minutes from lastTime
+      const moreTrips = await fetchJourneysWindow(searchedFromLoc, searchedToLoc, date, lastTime, 30, 2);
+
+      let combined = [...journeys];
+      let seen = new Set(combined.map(getTripKey));
+
+      for (const t of moreTrips) {
+        const key = getTripKey(t);
+        if (!seen.has(key)) {
+          seen.add(key);
+          combined.push(t);
+        }
+      }
+      setJourneys(combined);
+    } catch (err) {
+      console.error('Failed to load later journeys', err);
+    } finally {
+      setLoadingLater(false);
+    }
+  };
+
+  const handleLoadEarlierJourneys = async () => {
+    if (!searchedFromLoc || !searchedToLoc || !journeys || journeys.length === 0 || loadingEarlier) return;
+    setLoadingEarlier(true);
+    try {
+      const firstTrip = journeys[0];
+      const firstTime = getTripDepartureTime(firstTrip);
+      let mins = timeToMinutes(firstTime) - 30;
+      if (mins < 0) mins += 24 * 60;
+      const hh = String(Math.floor(mins / 60)).padStart(2, '0');
+      const mm = String(mins % 60).padStart(2, '0');
+      const earlierTime = `${hh}:${mm}`;
+
+      const tripRes = await fetchJourney(searchedFromLoc, searchedToLoc, date, earlierTime);
+      const rawTrips = tripRes.TripList?.Trip || [];
+      const batchTrips = Array.isArray(rawTrips) ? rawTrips : [rawTrips];
+
+      let combined = [...batchTrips, ...journeys];
+      let seen = new Set();
+      let deduped = [];
+      for (const t of combined) {
+        const key = getTripKey(t);
+        if (!seen.has(key)) {
+          seen.add(key);
+          deduped.push(t);
+        }
+      }
+      deduped.sort((a, b) => timeToMinutes(getTripDepartureTime(a)) - timeToMinutes(getTripDepartureTime(b)));
+      setJourneys(deduped);
+    } catch (err) {
+      console.error('Failed to load earlier journeys', err);
+    } finally {
+      setLoadingEarlier(false);
     }
   };
 
@@ -154,12 +268,27 @@ export default function JourneyPlanner() {
       {error && <div style={{ color: 'red', padding: '1rem' }}>{error}</div>}
       
       {journeys && (
-        <div style={{ padding: '0 2rem 2rem' }}>
-          <h3 style={{ marginTop: 0 }}>Journeys found</h3>
+        <div style={{ padding: '0 4px 16px' }}>
+          <h3 style={{ margin: '0 0 12px', color: 'var(--ink)' }}>Journeys found</h3>
           {journeys.length === 0 ? (
             <p>No journeys found.</p>
           ) : (
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            <>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+                <button
+                  type="button"
+                  className="pagination-btn"
+                  style={{ width: 'auto', padding: '6px 14px', fontSize: '13px' }}
+                  onClick={handleLoadEarlierJourneys}
+                  disabled={loadingEarlier}
+                >
+                  {loadingEarlier ? 'Loading earlier...' : '↑ Earlier Journeys (-30 min)'}
+                </button>
+                <span style={{ fontSize: '13px', color: 'var(--sub)', fontWeight: '600' }}>
+                  {getTripDepartureTime(journeys[0])} – {getTripDepartureTime(journeys[journeys.length - 1])}
+                </span>
+              </div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
               {journeys.map((trip, i) => {
                 const legs = Array.isArray(trip.Leg) ? trip.Leg : [trip.Leg];
                 const start = legs[0];
@@ -351,7 +480,26 @@ export default function JourneyPlanner() {
                 );
               })}
             </ul>
-          )}
+            {journeys.length > 0 && (
+              <div className="pagination-bar" style={{ marginTop: '14px' }}>
+                <div className="pagination-info">
+                  <span>Showing {journeys.length} journeys</span>
+                  <span className="pagination-range">
+                    ({getTripDepartureTime(journeys[0])} – {getTripDepartureTime(journeys[journeys.length - 1])})
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className="pagination-btn"
+                  onClick={handleLoadLaterJourneys}
+                  disabled={loadingLater}
+                >
+                  {loadingLater ? 'Loading later journeys...' : 'Later Journeys (+30 min) ↓'}
+                </button>
+              </div>
+            )}
+          </>
+        )}
         </div>
       )}
     </div>
