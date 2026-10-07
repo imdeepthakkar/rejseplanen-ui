@@ -351,14 +351,14 @@ export default function JourneyPlanner() {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
                         <div style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--ink)' }}>
                           {start.Origin.time}
-                          {start.Origin.rtTime && start.Origin.rtTime !== start.Origin.time && (
+                          {start.type !== 'WALK' && start.Origin.rtTime && start.Origin.rtTime !== start.Origin.time && (
                             <span style={{ color: '#e51937', fontSize: '0.9rem', marginLeft: '4px' }}>
                               ({start.Origin.rtTime})
                             </span>
                           )}
                           {' - Arrive at: '}
                           {end.Destination.time}
-                          {end.Destination.rtTime && end.Destination.rtTime !== end.Destination.time && (
+                          {end.type !== 'WALK' && end.Destination.rtTime && end.Destination.rtTime !== end.Destination.time && (
                             <span style={{ color: '#e51937', fontSize: '0.9rem', marginLeft: '4px' }}>
                               ({end.Destination.rtTime})
                             </span>
@@ -446,7 +446,7 @@ export default function JourneyPlanner() {
                               <div>
                                 <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--ink)' }}>
                                   {leg.Origin.time} <span style={{ marginLeft: '8px' }}>{leg.Origin.name.split(',')[0]}</span>
-                                  {leg.Origin.rtTime && (
+                                  {leg.type !== 'WALK' && leg.Origin.rtTime && leg.Origin.rtTime !== leg.Origin.time && (
                                     <span style={{ color: '#e51937', marginLeft: '0.5rem', fontWeight: 'bold', fontSize: '13px' }}>
                                       (Expected: {leg.Origin.rtTime})
                                     </span>
@@ -473,7 +473,7 @@ export default function JourneyPlanner() {
                             {stepIdx === legs.length - 1 && (
                               <div style={{ marginTop: '24px', fontSize: '15px', fontWeight: '700', color: 'var(--ink)' }}>
                                 {leg.Destination.time} <span style={{ marginLeft: '8px' }}>{leg.Destination.name.split(',')[0]}</span>
-                                {leg.Destination.rtTime && (
+                                {leg.type !== 'WALK' && leg.Destination.rtTime && leg.Destination.rtTime !== leg.Destination.time && (
                                   <span style={{ color: '#e51937', marginLeft: '0.5rem', fontWeight: 'bold', fontSize: '13px' }}>
                                     (Expected: {leg.Destination.rtTime})
                                   </span>

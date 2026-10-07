@@ -327,7 +327,7 @@ export default function LiveDepartures() {
                         <span style={{ color: '#e51937', fontSize: '12px', fontWeight: '700' }}>
                           (Cancelled)
                         </span>
-                      ) : d.rtTime ? (
+                      ) : (d.rtTime && d.rtTime !== d.time) ? (
                         <span style={{ color: '#e51937', fontSize: '12px', fontWeight: '700' }}>
                           (Expected: {d.rtTime})
                         </span>
