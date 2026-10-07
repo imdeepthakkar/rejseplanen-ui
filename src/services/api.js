@@ -11,7 +11,7 @@ export async function fetchLocation(query) {
     return fetchJson(`/location?input=${encodeURIComponent(query)}`);
 }
 
-export async function fetchJourney(fromLoc, toLoc, dateStr, timeStr) {
+export async function fetchJourney(fromLoc, toLoc, dateStr, timeStr, options = {}) {
     const originParams = fromLoc.id 
         ? `originId=${fromLoc.id}` 
         : `originCoordX=${fromLoc.x}&originCoordY=${fromLoc.y}&originCoordName=${encodeURIComponent(fromLoc.name)}`;
@@ -29,6 +29,15 @@ export async function fetchJourney(fromLoc, toLoc, dateStr, timeStr) {
     }
     if (timeStr) {
         url += `&time=${timeStr}`;
+    }
+    if (options.useMetro !== undefined) {
+        url += `&useMetro=${options.useMetro ? 1 : 0}`;
+    }
+    if (options.useBus !== undefined) {
+        url += `&useBus=${options.useBus ? 1 : 0}`;
+    }
+    if (options.useTrain !== undefined) {
+        url += `&useTrain=${options.useTrain ? 1 : 0}`;
     }
     
     return fetchJson(url);

@@ -16,9 +16,7 @@ function getTripDepartureTime(trip) {
 
 function getTripKey(trip) {
   const legs = Array.isArray(trip.Leg) ? trip.Leg : [trip.Leg];
-  const start = legs[0];
-  const end = legs[legs.length - 1];
-  return `${start.Origin.date || ''}_${start.Origin.time}_${start.Origin.name}_${end.Destination.time}_${end.Destination.name}`;
+  return legs.map(l => `${l.name || l.type}_${l.Origin?.name}_${l.Origin?.time}_${l.Destination?.name}_${l.Destination?.time}`).join('->');
 }
 
 export default function JourneyPlanner() {
@@ -104,14 +102,24 @@ export default function JourneyPlanner() {
 
     while (batches < maxBatches) {
       batches++;
-      const tripRes = await fetchJourney(fromLocation, toLocation, searchDate, currentTime);
-      const rawTrips = tripRes.TripList?.Trip || [];
-      const batchTrips = Array.isArray(rawTrips) ? rawTrips : [rawTrips];
+      // Fetch both standard routing and non-metro routing in parallel to uncover all route options (e.g. regional trains, S-trains, Metro)
+      const [stdRes, noMetroRes] = await Promise.all([
+        fetchJourney(fromLocation, toLocation, searchDate, currentTime).catch(() => ({})),
+        fetchJourney(fromLocation, toLocation, searchDate, currentTime, { useMetro: false }).catch(() => ({}))
+      ]);
+
+      const rawStd = stdRes.TripList?.Trip || [];
+      const rawNoMetro = noMetroRes.TripList?.Trip || [];
+      const batchTrips = [
+        ...(Array.isArray(rawStd) ? rawStd : [rawStd]),
+        ...(Array.isArray(rawNoMetro) ? rawNoMetro : [rawNoMetro])
+      ];
 
       if (batchTrips.length === 0) break;
 
       let newItemsAdded = 0;
       for (const t of batchTrips) {
+        if (!t || !t.Leg) continue;
         const key = getTripKey(t);
         if (!seen.has(key)) {
           seen.add(key);
@@ -121,6 +129,8 @@ export default function JourneyPlanner() {
       }
 
       if (newItemsAdded === 0) break;
+
+      combined.sort((a, b) => timeToMinutes(getTripDepartureTime(a)) - timeToMinutes(getTripDepartureTime(b)));
 
       const firstTime = getTripDepartureTime(combined[0]);
       const lastTime = getTripDepartureTime(combined[combined.length - 1]);
@@ -141,7 +151,7 @@ export default function JourneyPlanner() {
       const lastTrip = journeys[journeys.length - 1];
       const lastTime = getTripDepartureTime(lastTrip);
 
-      // Fetch next 30 minutes from lastTime
+      // Fetch next 30 minutes with both standard and alternative options
       const moreTrips = await fetchJourneysWindow(searchedFromLoc, searchedToLoc, date, lastTime, 30, 2);
 
       let combined = [...journeys];
@@ -154,6 +164,8 @@ export default function JourneyPlanner() {
           combined.push(t);
         }
       }
+
+      combined.sort((a, b) => timeToMinutes(getTripDepartureTime(a)) - timeToMinutes(getTripDepartureTime(b)));
       setJourneys(combined);
     } catch (err) {
       console.error('Failed to load later journeys', err);
@@ -174,11 +186,9 @@ export default function JourneyPlanner() {
       const mm = String(mins % 60).padStart(2, '0');
       const earlierTime = `${hh}:${mm}`;
 
-      const tripRes = await fetchJourney(searchedFromLoc, searchedToLoc, date, earlierTime);
-      const rawTrips = tripRes.TripList?.Trip || [];
-      const batchTrips = Array.isArray(rawTrips) ? rawTrips : [rawTrips];
+      const earlierTrips = await fetchJourneysWindow(searchedFromLoc, searchedToLoc, date, earlierTime, 30, 2);
 
-      let combined = [...batchTrips, ...journeys];
+      let combined = [...earlierTrips, ...journeys];
       let seen = new Set();
       let deduped = [];
       for (const t of combined) {

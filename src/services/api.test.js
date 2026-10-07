@@ -40,6 +40,24 @@ describe('api service', () => {
         expect(result).toEqual(mockResponse);
     });
 
+    it('fetchJourney appends transport mode filters when provided', async () => {
+        const mockResponse = { TripList: { Trip: [] } };
+        let requestedUrl = null;
+
+        globalThis.fetch = async (url) => {
+            requestedUrl = url;
+            return {
+                ok: true,
+                json: async () => mockResponse,
+            };
+        };
+
+        await fetchJourney({ id: '8600626' }, { id: '8600700' }, null, null, { useMetro: false });
+        expect(requestedUrl).toBe(
+            './api/trip?originId=8600626&destId=8600700&useMetro=0&format=json'
+        );
+    });
+
     it('fetchDepartures fetches departure board for station ID', async () => {
         const mockResponse = { DepartureBoard: { Departure: [] } };
         let requestedUrl = null;
