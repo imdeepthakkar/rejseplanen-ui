@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Plus, Trash2, Check, MapPin } from 'lucide-react';
 import { getFavorites, saveFavorite, deleteFavorite } from '../services/storage';
 import { fetchLocation, fetchStopsNearby } from '../services/api';
@@ -24,6 +25,11 @@ export default function EditFavoriteModal({ isOpen, onClose, onFavoritesChanged 
       setEditingId(null);
       setIsAddingNew(false);
       setStationSuggestions([]);
+      const origOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = origOverflow;
+      };
     }
   }, [isOpen]);
 
@@ -145,7 +151,7 @@ export default function EditFavoriteModal({ isOpen, onClose, onFavoritesChanged 
     if (onFavoritesChanged) onFavoritesChanged(updated);
   };
 
-  return (
+  return createPortal(
     <div className="fav-modal-backdrop" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="fav-modal-title">
       <div className="fav-modal-content" onClick={(e) => e.stopPropagation()}>
         <header className="fav-modal-header">
@@ -382,6 +388,7 @@ export default function EditFavoriteModal({ isOpen, onClose, onFavoritesChanged 
           </button>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
