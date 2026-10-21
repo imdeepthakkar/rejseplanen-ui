@@ -4,15 +4,17 @@ import Tabs from './components/Tabs';
 import JourneyPlanner from './components/JourneyPlanner';
 import LiveDepartures from './components/LiveDepartures';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download } from 'lucide-react';
+import { Download, MessageSquarePlus } from 'lucide-react';
 
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import OfflineBanner from './components/OfflineBanner';
+import FeedbackModal from './components/FeedbackModal';
 import { getDefaultTab } from './services/storage';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState(() => getDefaultTab());
   const [isStandalone, setIsStandalone] = useState(false);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
   useEffect(() => {
     const checkStandalone = () => {
@@ -34,6 +36,11 @@ export default function App() {
       <div className="modern-bg"></div>
       <OfflineBanner />
       <PWAInstallPrompt />
+      <FeedbackModal
+        isOpen={isFeedbackOpen}
+        onClose={() => setIsFeedbackOpen(false)}
+        context={{ activeTab }}
+      />
       <main className="main-content">
         <div className="mac-window">
           <div className="mac-titlebar">
@@ -43,18 +50,30 @@ export default function App() {
               <span className="mac-btn max"></span>
             </div>
             <div className="mac-title">Rejseplanen</div>
-            {!isStandalone && (
+            <div className="mac-actions">
               <button
                 type="button"
-                className="mac-install-btn"
-                onClick={() => window.dispatchEvent(new CustomEvent('pwa-trigger-install'))}
-                title="Install Rejseplanen App"
-                aria-label="Install Rejseplanen App"
+                className="mac-feedback-btn"
+                onClick={() => setIsFeedbackOpen(true)}
+                title="Give feedback or report a bug"
+                aria-label="Give feedback or report a bug"
               >
-                <Download size={12} />
-                <span>Install</span>
+                <MessageSquarePlus size={12} />
+                <span>Feedback</span>
               </button>
-            )}
+              {!isStandalone && (
+                <button
+                  type="button"
+                  className="mac-install-btn"
+                  onClick={() => window.dispatchEvent(new CustomEvent('pwa-trigger-install'))}
+                  title="Install Rejseplanen App"
+                  aria-label="Install Rejseplanen App"
+                >
+                  <Download size={12} />
+                  <span>Install</span>
+                </button>
+              )}
+            </div>
           </div>
           <div className="mac-content">
             <Tabs activeTab={activeTab} onTabChange={setActiveTab} />
