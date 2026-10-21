@@ -2,7 +2,13 @@ import React, { useState } from 'react';
 import { ArrowUpDown } from 'lucide-react';
 import { fetchLocation, fetchJourney } from '../services/api';
 import { getTransportStyle } from '../utils/transportStyles';
-import { timeToMinutes, timeDifferenceMinutes, formatDuration } from '../utils/timeHelpers';
+import {
+  timeToMinutes,
+  timeDifferenceMinutes,
+  formatDuration,
+  compareTripsChronological,
+  getDateTimeTimestamp
+} from '../utils/timeHelpers';
 import { motion, AnimatePresence } from 'framer-motion';
 import AutocompleteInput from './AutocompleteInput';
 import FavoriteChips from './FavoriteChips';
@@ -12,6 +18,11 @@ import './FormStyles.css';
 function getTripDepartureTime(trip) {
   const legs = Array.isArray(trip.Leg) ? trip.Leg : [trip.Leg];
   return legs[0]?.Origin?.time || '';
+}
+
+function getTripDepartureDate(trip) {
+  const legs = Array.isArray(trip.Leg) ? trip.Leg : [trip.Leg];
+  return legs[0]?.Origin?.date || '';
 }
 
 function getTripKey(trip) {
@@ -130,15 +141,22 @@ export default function JourneyPlanner() {
 
       if (newItemsAdded === 0) break;
 
-      combined.sort((a, b) => timeToMinutes(getTripDepartureTime(a)) - timeToMinutes(getTripDepartureTime(b)));
+      combined.sort((a, b) => compareTripsChronological(a, b, now));
 
-      const firstTime = getTripDepartureTime(combined[0]);
-      const lastTime = getTripDepartureTime(combined[combined.length - 1]);
-      if (firstTime && lastTime && timeDifferenceMinutes(firstTime, lastTime) >= minSpanMinutes) {
-        break;
+      const firstTrip = combined[0];
+      const lastTrip = combined[combined.length - 1];
+      if (firstTrip && lastTrip) {
+        const firstTime = getTripDepartureTime(firstTrip);
+        const firstDate = getTripDepartureDate(firstTrip);
+        const lastTime = getTripDepartureTime(lastTrip);
+        const lastDate = getTripDepartureDate(lastTrip);
+        const spanMs = getDateTimeTimestamp(lastTime, lastDate, now) - getDateTimeTimestamp(firstTime, firstDate, now);
+        if (spanMs / (60 * 1000) >= minSpanMinutes) {
+          break;
+        }
       }
 
-      currentTime = lastTime;
+      currentTime = getTripDepartureTime(lastTrip);
     }
 
     return combined;
@@ -165,7 +183,7 @@ export default function JourneyPlanner() {
         }
       }
 
-      combined.sort((a, b) => timeToMinutes(getTripDepartureTime(a)) - timeToMinutes(getTripDepartureTime(b)));
+      combined.sort((a, b) => compareTripsChronological(a, b, now));
       setJourneys(combined);
     } catch (err) {
       console.error('Failed to load later journeys', err);
@@ -198,7 +216,7 @@ export default function JourneyPlanner() {
           deduped.push(t);
         }
       }
-      deduped.sort((a, b) => timeToMinutes(getTripDepartureTime(a)) - timeToMinutes(getTripDepartureTime(b)));
+      deduped.sort((a, b) => compareTripsChronological(a, b, now));
       setJourneys(deduped);
     } catch (err) {
       console.error('Failed to load earlier journeys', err);

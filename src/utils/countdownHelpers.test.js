@@ -47,4 +47,13 @@ describe('countdownHelpers', () => {
     expect(res.text).toBe('10 min');
     expect(res.minutes).toBe(10);
   });
+
+  it('computes multi-hour countdown accurately when explicit date is passed across midnight', () => {
+    const now = new Date(2026, 9, 21, 19, 46, 0); // 19:46
+    // Departure at 00:06 on 22.10.26 (4 hours 20 minutes ahead)
+    const res = getLiveCountdown('00:06', null, now, '22.10.26');
+    expect(res.text).toBe('4 Hrs 20 Mins');
+    expect(res.minutes).toBe(260);
+  });
 });
+

@@ -96,6 +96,24 @@ describe('api service', () => {
         expect(result).toEqual(mockResponse);
     });
 
+    it('fetchDepartures handles DD.MM.YY date format directly', async () => {
+        const mockResponse = { DepartureBoard: { Departure: [] } };
+        let requestedUrl = null;
+
+        globalThis.fetch = async (url) => {
+            requestedUrl = url;
+            return {
+                ok: true,
+                json: async () => mockResponse,
+            };
+        };
+
+        await fetchDepartures('8600626', '00:06', '22.10.26');
+        expect(requestedUrl).toBe(
+            './api/departureBoard?id=8600626&time=00:06&date=22.10.26&format=json'
+        );
+    });
+
     it('fetchStopsNearby fetches nearby stops with coordinates', async () => {
         const mockResponse = { LocationList: { StopLocation: [{ name: 'Elmegade', id: '45740' }] } };
         let requestedUrl = null;

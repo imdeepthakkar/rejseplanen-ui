@@ -1,27 +1,38 @@
-import { formatDuration } from './timeHelpers';
+import { formatDuration, parseRejseplanenDateTime } from './timeHelpers.js';
 
-export function getLiveCountdown(timeStr, rtTimeStr, now = new Date()) {
+export function getLiveCountdown(timeStr, rtTimeStr, now = new Date(), dateStr, rtDateStr) {
   if (!timeStr) {
     return { text: '--', minutes: 0, isDelayed: false, isImminent: false };
   }
 
   const effectiveTime = rtTimeStr || timeStr;
+  const effectiveDate = rtDateStr || dateStr;
   const isDelayed = Boolean(rtTimeStr && rtTimeStr !== timeStr);
 
-  const [depHours, depMinutes] = effectiveTime.split(':').map(Number);
-  const nowHours = now.getHours();
-  const nowMinutes = now.getMinutes();
+  let diff;
+  if (effectiveDate) {
+    const parsed = parseRejseplanenDateTime(effectiveDate, effectiveTime);
+    if (parsed) {
+      diff = Math.round((parsed.getTime() - now.getTime()) / (60 * 1000));
+    }
+  }
 
-  const depTotal = depHours * 60 + depMinutes;
-  const nowTotal = nowHours * 60 + nowMinutes;
+  if (diff === undefined) {
+    const [depHours, depMinutes] = effectiveTime.split(':').map(Number);
+    const nowHours = now.getHours();
+    const nowMinutes = now.getMinutes();
 
-  let diff = depTotal - nowTotal;
+    const depTotal = depHours * 60 + depMinutes;
+    const nowTotal = nowHours * 60 + nowMinutes;
 
-  // Handle midnight roll-over (e.g., now is 23:55, departure is 00:10)
-  if (diff < -720) {
-    diff += 1440;
-  } else if (diff > 720) {
-    diff -= 1440;
+    diff = depTotal - nowTotal;
+
+    // Handle midnight roll-over (e.g., now is 23:55, departure is 00:10)
+    if (diff < -720) {
+      diff += 1440;
+    } else if (diff > 720) {
+      diff -= 1440;
+    }
   }
 
   const isImminent = diff <= 2;

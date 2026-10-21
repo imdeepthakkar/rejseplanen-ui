@@ -2,9 +2,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { fetchLocation, fetchDepartures, fetchStopsNearby } from '../services/api';
 import { getFavorites } from '../services/storage';
 import { getTransportStyle, formatLineBadge } from '../utils/transportStyles';
-import { classifyDeparture, getAvailableModes, TRANSPORT_MODES } from '../utils/transportModes';
+import { classifyDeparture, TRANSPORT_MODES } from '../utils/transportModes';
 import { getLiveCountdown } from '../utils/countdownHelpers';
-import { timeToMinutes, timeDifferenceMinutes } from '../utils/timeHelpers';
+import { compareDeparturesChronological, getDateTimeTimestamp } from '../utils/timeHelpers';
 import { motion, AnimatePresence } from 'framer-motion';
 import AutocompleteInput from './AutocompleteInput';
 import FavoriteChips from './FavoriteChips';
@@ -169,12 +169,14 @@ export default function LiveDepartures() {
     let seen = new Set(combined.map(getDepartureKey));
     let batches = 0;
 
-    let nextTime = combined.length > 0 ? combined[combined.length - 1].time : undefined;
+    const initialLastDep = combined.length > 0 ? combined[combined.length - 1] : null;
+    let nextTime = initialLastDep?.time;
+    let nextDate = initialLastDep?.date;
 
     while (batches < maxBatches) {
       batches++;
       const depResults = await Promise.all(
-        ids.map(id => fetchDepartures(id, nextTime).catch(err => {
+        ids.map(id => fetchDepartures(id, nextTime, nextDate).catch(err => {
           console.warn('Failed to fetch from stop ' + id, err);
           return { DepartureBoard: { Departure: [] } };
         }))
@@ -196,16 +198,23 @@ export default function LiveDepartures() {
 
       if (newItemsAdded === 0) break;
 
-      // Sort combined chronologically
-      combined.sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+      // Sort combined chronologically by date and time
+      const currentTime = new Date();
+      combined.sort((a, b) => compareDeparturesChronological(a, b, currentTime));
 
-      const firstTime = combined[0]?.time;
-      const lastTime = combined[combined.length - 1]?.time;
-      if (firstTime && lastTime && timeDifferenceMinutes(firstTime, lastTime) >= minSpanMinutes) {
-        break;
+      const firstDep = combined[0];
+      const currentLastDep = combined[combined.length - 1];
+      if (firstDep && currentLastDep) {
+        const spanMs = getDateTimeTimestamp(currentLastDep.time, currentLastDep.date, currentTime) -
+                       getDateTimeTimestamp(firstDep.time, firstDep.date, currentTime);
+        const spanMinutes = spanMs / (60 * 1000);
+        if (spanMinutes >= minSpanMinutes) {
+          break;
+        }
       }
 
-      nextTime = lastTime;
+      nextTime = currentLastDep?.time;
+      nextDate = currentLastDep?.date;
     }
 
     return combined;
@@ -244,18 +253,6 @@ export default function LiveDepartures() {
       loadDepartures(homeAddr);
     }
   };
-
-  // Available modes computed dynamically based on the current station's departures
-  const availableModes = useMemo(() => {
-    return getAvailableModes(departures);
-  }, [departures]);
-
-  // If currently selected mode is no longer available at this station, reset to ALL
-  useEffect(() => {
-    if (selectedMode !== 'ALL' && !availableModes.includes(selectedMode)) {
-      setSelectedMode('ALL');
-    }
-  }, [availableModes, selectedMode]);
 
   // Filter departures according to selectedMode
   const filteredDepartures = useMemo(() => {
@@ -331,7 +328,6 @@ export default function LiveDepartures() {
           <ModeFilterBar
             selectedMode={selectedMode}
             onSelectMode={setSelectedMode}
-            availableModes={availableModes}
           />
 
           {departures.length === 0 ? (
@@ -356,7 +352,7 @@ export default function LiveDepartures() {
               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 <AnimatePresence>
                   {filteredDepartures.map((d, i) => {
-                    const countdown = getLiveCountdown(d.time, d.rtTime, now);
+                    const countdown = getLiveCountdown(d.time, d.rtTime, now, d.date, d.rtDate);
                     const style = getTransportStyle(d.type, d.name);
                     const badgeText = formatLineBadge(d.name);
                     const trackText = d.rtTrack || d.track;

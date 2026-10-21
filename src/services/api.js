@@ -24,8 +24,12 @@ export async function fetchJourney(fromLoc, toLoc, dateStr, timeStr, options = {
     
     if (dateStr) {
         // HTML input date is YYYY-MM-DD. Rejseplanen wants DD.MM.YY
-        const [yyyy, mm, dd] = dateStr.split('-');
-        url += `&date=${dd}.${mm}.${yyyy.slice(2)}`;
+        if (dateStr.includes('.')) {
+            url += `&date=${dateStr}`;
+        } else if (dateStr.includes('-')) {
+            const [yyyy, mm, dd] = dateStr.split('-');
+            url += `&date=${dd}.${mm}.${yyyy.slice(2)}`;
+        }
     }
     if (timeStr) {
         url += `&time=${timeStr}`;
@@ -49,8 +53,12 @@ export async function fetchDepartures(stationId, timeStr, dateStr) {
         url += `&time=${timeStr}`;
     }
     if (dateStr) {
-        const [yyyy, mm, dd] = dateStr.split('-');
-        url += `&date=${dd}.${mm}.${yyyy.slice(2)}`;
+        if (dateStr.includes('.')) {
+            url += `&date=${dateStr}`;
+        } else if (dateStr.includes('-')) {
+            const [yyyy, mm, dd] = dateStr.split('-');
+            url += `&date=${dd}.${mm}.${yyyy.slice(2)}`;
+        }
     }
     return fetchJson(url);
 }

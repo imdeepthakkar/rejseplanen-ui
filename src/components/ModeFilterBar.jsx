@@ -34,17 +34,11 @@ function renderModeIcon(iconType) {
   }
 }
 
-export default function ModeFilterBar({ selectedMode, onSelectMode, availableModes = MODE_KEYS }) {
-  const visibleModes = availableModes && availableModes.length > 0 
-    ? MODE_KEYS.filter(key => availableModes.includes(key))
-    : MODE_KEYS;
-
-  const countClass = `cols-${Math.min(visibleModes.length, 3)}`;
-
+export default function ModeFilterBar({ selectedMode, onSelectMode }) {
   return (
     <div className="mode-filter-container" role="toolbar" aria-label="Filter departures by transport mode">
-      <div className={`mode-filter-scroll ${countClass}`}>
-        {visibleModes.map((key) => {
+      <div className="mode-filter-scroll">
+        {MODE_KEYS.map((key) => {
           const config = TRANSPORT_MODES[key];
           const isSelected = selectedMode === key;
 
