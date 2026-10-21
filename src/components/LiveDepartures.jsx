@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { fetchLocation, fetchDepartures, fetchStopsNearby } from '../services/api';
 import { getFavorites } from '../services/storage';
-import { getTransportStyle } from '../utils/transportStyles';
-import { timeToMinutes, timeDifferenceMinutes } from '../utils/timeHelpers';
+import { getTransportStyle, formatLineBadge } from '../utils/transportStyles';
+import { classifyDeparture, TRANSPORT_MODES } from '../utils/transportModes';
+import { getLiveCountdown } from '../utils/countdownHelpers';
+import { timeDifferenceMinutes } from '../utils/timeHelpers';
 import { motion, AnimatePresence } from 'framer-motion';
 import AutocompleteInput from './AutocompleteInput';
 import FavoriteChips from './FavoriteChips';
+import ModeFilterBar from './ModeFilterBar';
 import './FormStyles.css';
 
 function getDepartureKey(d) {
@@ -22,6 +25,16 @@ export default function LiveDepartures() {
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [homeStation, setHomeStation] = useState('');
+  const [selectedMode, setSelectedMode] = useState('ALL');
+  const [now, setNow] = useState(() => new Date());
+
+  // Auto-tick live countdowns every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(new Date());
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const favs = getFavorites();
@@ -207,6 +220,24 @@ export default function LiveDepartures() {
     }
   };
 
+  // Compute live departure counts by mode
+  const counts = useMemo(() => {
+    const acc = { ALL: departures?.length || 0, BUS: 0, S_TOG: 0, METRO: 0, RE: 0, LETBANE: 0 };
+    if (!departures) return acc;
+    for (const d of departures) {
+      const m = classifyDeparture(d);
+      if (acc[m] !== undefined) acc[m]++;
+    }
+    return acc;
+  }, [departures]);
+
+  // Filter departures according to selectedMode
+  const filteredDepartures = useMemo(() => {
+    if (!departures) return [];
+    if (selectedMode === 'ALL') return departures;
+    return departures.filter(d => classifyDeparture(d) === selectedMode);
+  }, [departures, selectedMode]);
+
   return (
     <div>
       <form onSubmit={handleSubmit} className="form-group">
@@ -252,7 +283,7 @@ export default function LiveDepartures() {
       
       {departures && (
         <div style={{ padding: '0 4px 16px' }}>
-          <div style={{ marginBottom: '16px' }}>
+          <div style={{ marginBottom: '12px' }}>
             <h3 style={{ margin: 0, color: 'var(--ink)' }}>Live Departures</h3>
             {resolvedStop && (
               <p style={{ margin: '4px 0 0', fontSize: '14px', color: 'var(--sub)' }}>
@@ -269,91 +300,107 @@ export default function LiveDepartures() {
               </p>
             )}
           </div>
+
+          {/* Mode Filter Bar */}
+          <ModeFilterBar
+            selectedMode={selectedMode}
+            onSelectMode={setSelectedMode}
+            counts={counts}
+          />
+
           {departures.length === 0 ? (
             <p>No departures found.</p>
+          ) : filteredDepartures.length === 0 ? (
+            <div className="dep-empty-mode">
+              <span className="dep-empty-text">
+                No <strong>{TRANSPORT_MODES[selectedMode]?.label || selectedMode}</strong> departures found in the next 30 min.
+              </span>
+              <button
+                type="button"
+                className="pagination-btn"
+                style={{ maxWidth: '240px' }}
+                onClick={handleLoadLater}
+                disabled={loadingMore}
+              >
+                {loadingMore ? 'Loading later departures...' : 'Search Later Departures (+30 min) ↓'}
+              </button>
+            </div>
           ) : (
             <>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 <AnimatePresence>
-                  {departures.map((d, i) => (
-                    <motion.li 
-                      key={i}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.2, delay: Math.min(i * 0.03, 0.3) }}
-                      style={{ 
-                        padding: '12px 14px', 
-                        borderBottom: '1px solid rgba(0,0,0,0.05)', 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '10px',
-                        background: i % 2 === 0 ? '#ffffff' : '#f8fafc',
-                        borderRadius: '8px',
-                        marginBottom: '4px'
-                      }}
-                    >
-                    <div style={{ flex: '0 0 52px', fontWeight: '700', fontSize: '16px', color: 'var(--ink)' }}>
-                      {d.time}
-                    </div>
-                    <div style={{ flex: '0 0 auto' }}>
-                      <span style={{
-                        background: getTransportStyle(d.type, d.name).background,
-                        color: getTransportStyle(d.type, d.name).color,
-                        padding: '3px 7px',
-                        borderRadius: '5px',
-                        fontWeight: '700',
-                        fontSize: '13px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        minWidth: '32px'
-                      }}>
-                        {d.name}
-                      </span>
-                    </div>
-                    <div style={{ flex: '1 1 auto', minWidth: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                      <div style={{ 
-                        fontSize: '14px', 
-                        color: 'var(--ink)', 
-                        lineHeight: '1.25',
-                        whiteSpace: 'nowrap', 
-                        overflow: 'hidden', 
-                        textOverflow: 'ellipsis' 
-                      }}>
-                        towards <strong>{d.direction}</strong>
-                      </div>
-                      {d.cancelled === 'true' ? (
-                        <span style={{ color: '#e51937', fontSize: '12px', fontWeight: '700' }}>
-                          (Cancelled)
-                        </span>
-                      ) : (d.rtTime && d.rtTime !== d.time) ? (
-                        <span style={{ color: '#e51937', fontSize: '12px', fontWeight: '700' }}>
-                          (Expected: {d.rtTime})
-                        </span>
-                      ) : null}
-                    </div>
-                    {(d.rtTrack || d.track) && (
-                      <div style={{ 
-                        flex: '0 0 auto',
-                        color: d.rtTrack && d.rtTrack !== d.track ? '#e51937' : 'var(--sub)', 
-                        fontSize: '12px', 
-                        fontWeight: '600',
-                        whiteSpace: 'nowrap'
-                      }}>
-                        Trk {d.rtTrack || d.track}
-                      </div>
-                    )}
-                  </motion.li>
-                  ))}
+                  {filteredDepartures.map((d, i) => {
+                    const countdown = getLiveCountdown(d.time, d.rtTime, now);
+                    const style = getTransportStyle(d.type, d.name);
+                    const badgeText = formatLineBadge(d.name);
+                    const trackText = d.rtTrack || d.track;
+                    const trackChanged = Boolean(d.rtTrack && d.track && d.rtTrack !== d.track);
+                    const isDelayed = Boolean(d.rtTime && d.rtTime !== d.time);
+
+                    return (
+                      <motion.li 
+                        key={getDepartureKey(d) + '_' + i}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2, delay: Math.min(i * 0.025, 0.25) }}
+                        className="departure-card"
+                      >
+                        {/* Row 1: Countdown + Clock Time + Badge + Track */}
+                        <div className="dep-header-row">
+                          <div className="dep-meta-left">
+                            <span 
+                              className={`countdown-badge ${countdown.isImminent ? 'is-imminent' : countdown.isDelayed ? 'is-delayed' : 'is-normal'}`}
+                            >
+                              {countdown.text}
+                            </span>
+                            <span className="dep-clock-time">{d.time}</span>
+                            <span
+                              className="dep-line-badge"
+                              style={{
+                                background: style.background,
+                                color: style.color,
+                              }}
+                            >
+                              {badgeText}
+                            </span>
+                          </div>
+                          {trackText && (
+                            <span className={`dep-track ${trackChanged ? 'is-changed' : ''}`}>
+                              Spor {trackText}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Row 2: Direction (full width, wrapping, zero ellipsis truncation) */}
+                        <div className="dep-body-row">
+                          <div className="dep-direction">
+                            <span className="dep-arrow" aria-hidden="true">→</span>
+                            <span>{d.direction}</span>
+                          </div>
+                          {d.cancelled === 'true' ? (
+                            <span className="dep-status-line cancelled">
+                              (Aflyst / Cancelled)
+                            </span>
+                          ) : isDelayed ? (
+                            <span className="dep-status-line delayed">
+                              (Expected: {d.rtTime})
+                            </span>
+                          ) : null}
+                        </div>
+                      </motion.li>
+                    );
+                  })}
                 </AnimatePresence>
               </ul>
-              {departures.length > 0 && (
+              {filteredDepartures.length > 0 && (
                 <div className="pagination-bar">
                   <div className="pagination-info">
-                    <span>Showing {departures.length} departures</span>
+                    <span>
+                      Showing {filteredDepartures.length} of {departures.length} departures
+                    </span>
                     <span className="pagination-range">
-                      ({departures[0].time} – {departures[departures.length - 1].time})
+                      ({filteredDepartures[0].time} – {filteredDepartures[filteredDepartures.length - 1].time})
                     </span>
                   </div>
                   <button

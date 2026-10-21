@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bus, Train, Tram, Layers } from 'lucide-react';
+import { Bus, Train, TramFront, Layers } from 'lucide-react';
 import { MODE_KEYS, TRANSPORT_MODES } from '../utils/transportModes';
 import './ModeFilterBar.css';
 
@@ -29,7 +29,7 @@ function renderModeIcon(iconType) {
         </span>
       );
     case 'letbane':
-      return <Tram size={14} className="mode-icon" />;
+      return <TramFront size={14} className="mode-icon" />;
     default:
       return null;
   }
