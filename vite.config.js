@@ -1,10 +1,37 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import { handleFeedbackRequest } from './api/feedback.js';
+
+function feedbackApiPlugin() {
+  return {
+    name: 'feedback-api-plugin',
+    configureServer(server) {
+      server.middlewares.use('/api/feedback', (req, res) => {
+        let body = '';
+        req.on('data', chunk => { body += chunk; });
+        req.on('end', async () => {
+          try {
+            const parsedBody = body ? JSON.parse(body) : {};
+            const result = await handleFeedbackRequest({ method: req.method, body: parsedBody });
+            res.statusCode = result.status;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify(result.body));
+          } catch (e) {
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: 'Failed to process feedback request' }));
+          }
+        });
+      });
+    }
+  };
+}
 
 export default defineConfig({
   plugins: [
     react(),
+    feedbackApiPlugin(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
