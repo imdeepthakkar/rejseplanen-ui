@@ -102,15 +102,31 @@ export async function submitFeedback(feedback, context = {}) {
     };
   }
 
-  const res = await fetch('/api/feedback', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
+  let res;
+  try {
+    res = await fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  } catch (netErr) {
+    throw new Error(`Network error (${netErr.message || 'connection failed'}). Please check your connection.`);
+  }
 
   if (!res.ok) {
-    const errData = await res.json().catch(() => ({}));
-    const error = new Error(errData.error || 'Failed to submit feedback');
+    let errData = {};
+    try {
+      const text = await res.text();
+      errData = JSON.parse(text);
+    } catch (_) {}
+
+    const host = typeof window !== 'undefined' ? window.location.host : '';
+    const errorMsg = errData.error || (
+      res.status === 404
+        ? `API endpoint not found (HTTP 404 on ${host || 'server'}). Please ensure you are on https://rejseplannen.vercel.app`
+        : `Server error (HTTP ${res.status}). Failed to submit feedback.`
+    );
+    const error = new Error(errorMsg);
     error.fallbackUrl = errData.fallbackUrl;
     throw error;
   }

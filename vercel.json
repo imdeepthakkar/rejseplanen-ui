@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/api/feedback",
+      "destination": "/api/feedback"
+    },
+    {
       "source": "/api/:path*",
       "destination": "https://www.rejseplanen.dk/bin/rest.exe/:path*"
     }

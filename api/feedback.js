@@ -6,7 +6,13 @@ export async function handleFeedbackRequest(req, env = {}) {
     };
   }
 
-  const { title, body, labels } = req.body || {};
+  let parsed = req.body;
+  if (typeof parsed === 'string') {
+    try {
+      parsed = JSON.parse(parsed);
+    } catch (_) {}
+  }
+  const { title, body, labels } = parsed || {};
   if (!title?.trim() || !body?.trim()) {
     return {
       status: 400,

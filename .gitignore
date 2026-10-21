@@ -35,3 +35,6 @@ dev-dist
 # Superpowers specs and state
 .superpowers/
 docs/superpowers/
+docs/*
+
+scratch/*
