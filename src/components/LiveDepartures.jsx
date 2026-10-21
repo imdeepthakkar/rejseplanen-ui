@@ -239,6 +239,11 @@ export default function LiveDepartures() {
     loadDepartures(station);
   };
 
+  const handleSelectStation = (selectedStation) => {
+    setStation(selectedStation);
+    loadDepartures(selectedStation);
+  };
+
   const handleSelectFavorite = (selectedStation) => {
     setStation(selectedStation);
     loadDepartures(selectedStation);
@@ -268,6 +273,7 @@ export default function LiveDepartures() {
           placeholder="Station or address (e.g., Nørreport)" 
           value={station} 
           onChange={setStation} 
+          onSelect={handleSelectStation}
           required={true}
         />
         <FavoriteChips 

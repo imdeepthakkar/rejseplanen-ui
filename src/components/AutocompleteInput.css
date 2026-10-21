@@ -3,8 +3,50 @@
   width: 100%;
 }
 
+.autocomplete-row {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+  align-items: center;
+}
+
+.autocomplete-input-box {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
 .autocomplete-input {
   width: 100%;
+  padding-right: 34px !important;
+}
+
+.autocomplete-clear-btn {
+  position: absolute;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(142, 142, 147, 0.22);
+  color: #64748B;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+  z-index: 2;
+}
+
+.autocomplete-clear-btn:hover {
+  background: rgba(142, 142, 147, 0.4);
+  color: #0F172A;
+}
+
+.autocomplete-clear-btn:active {
+  transform: scale(0.92);
 }
 
 .suggestions-list {

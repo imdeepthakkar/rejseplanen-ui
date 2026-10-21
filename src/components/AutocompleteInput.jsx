@@ -1,16 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { X } from 'lucide-react';
 import { fetchLocation } from '../services/api';
 import { getFavorites } from '../services/storage';
 import GoogleMapsLocationIcon from './GoogleMapsLocationIcon';
 import './AutocompleteInput.css';
 
-export default function AutocompleteInput({ value, onChange, placeholder, required }) {
+export default function AutocompleteInput({ value, onChange, onSelect, placeholder, required }) {
   const [suggestions, setSuggestions] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [searching, setSearching] = useState(false);
   const [locating, setLocating] = useState(false);
   const wrapperRef = useRef(null);
+  const inputRef = useRef(null);
   
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -30,6 +32,23 @@ export default function AutocompleteInput({ value, onChange, placeholder, requir
     } else {
       setIsOpen(true);
     }
+    // Auto-select text on focus so any typing replaces pre-filled address immediately
+    if (value && value.length > 0) {
+      setTimeout(() => {
+        inputRef.current?.select();
+      }, 0);
+    }
+  };
+
+  const handleClear = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onChange('');
+    setSuggestions([]);
+    const favs = getFavorites().filter(f => f.station && f.station.trim().length > 0);
+    setFavorites(favs);
+    setIsOpen(true);
+    inputRef.current?.focus();
   };
 
   useEffect(() => {
@@ -66,6 +85,8 @@ export default function AutocompleteInput({ value, onChange, placeholder, requir
   const handleSelect = (suggestion) => {
     onChange(suggestion.name);
     setIsOpen(false);
+    inputRef.current?.blur();
+    onSelect?.(suggestion.name);
   };
 
   const handleInputChange = (e) => {
@@ -92,8 +113,11 @@ export default function AutocompleteInput({ value, onChange, placeholder, requir
         const res = await fetch(url).then(r => r.json());
         const stops = res.LocationList?.StopLocation;
         if (stops && stops.length > 0) {
-          onChange(stops[0].name);
+          const stopName = stops[0].name;
+          onChange(stopName);
           setIsOpen(false);
+          inputRef.current?.blur();
+          onSelect?.(stopName);
         } else {
           alert("No nearby stops found");
         }
@@ -115,17 +139,31 @@ export default function AutocompleteInput({ value, onChange, placeholder, requir
 
   return (
     <div className="autocomplete-wrapper" ref={wrapperRef}>
-      <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
-        <input
-          type="text"
-          className="input-field autocomplete-input"
-          placeholder={placeholder}
-          value={value}
-          onChange={handleInputChange}
-          onFocus={handleInputFocus}
-          required={required}
-          style={{ flex: 1 }}
-        />
+      <div className="autocomplete-row">
+        <div className="autocomplete-input-box">
+          <input
+            ref={inputRef}
+            type="text"
+            className="input-field autocomplete-input"
+            placeholder={placeholder}
+            value={value}
+            onChange={handleInputChange}
+            onFocus={handleInputFocus}
+            required={required}
+          />
+          {Boolean(value && value.length > 0) && (
+            <button 
+              type="button" 
+              className="autocomplete-clear-btn"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={handleClear}
+              title="Clear input"
+              aria-label="Clear location input"
+            >
+              <X size={14} strokeWidth={2.5} />
+            </button>
+          )}
+        </div>
         <button 
           type="button" 
           className="gmaps-location-btn"
@@ -149,6 +187,8 @@ export default function AutocompleteInput({ value, onChange, placeholder, requir
                   onClick={() => {
                     onChange(fav.station);
                     setIsOpen(false);
+                    inputRef.current?.blur();
+                    onSelect?.(fav.station);
                   }}
                 >
                   <span className="fav-row-icon-small">{fav.icon}</span>
