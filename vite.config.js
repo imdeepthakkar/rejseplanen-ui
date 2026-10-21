@@ -1,9 +1,9 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import { handleFeedbackRequest } from './api/feedback.js';
 
-function feedbackApiPlugin() {
+function feedbackApiPlugin(env = {}) {
   return {
     name: 'feedback-api-plugin',
     configureServer(server) {
@@ -13,7 +13,9 @@ function feedbackApiPlugin() {
         req.on('end', async () => {
           try {
             const parsedBody = body ? JSON.parse(body) : {};
-            const result = await handleFeedbackRequest({ method: req.method, body: parsedBody });
+            const token = env.GITHUB_FEEDBACK_TOKEN || process.env.GITHUB_FEEDBACK_TOKEN;
+            const repo = env.GITHUB_FEEDBACK_REPO || process.env.GITHUB_FEEDBACK_REPO;
+            const result = await handleFeedbackRequest({ method: req.method, body: parsedBody }, { token, repo });
             res.statusCode = result.status;
             res.setHeader('Content-Type', 'application/json');
             res.end(JSON.stringify(result.body));
@@ -28,10 +30,12 @@ function feedbackApiPlugin() {
   };
 }
 
-export default defineConfig({
-  plugins: [
-    react(),
-    feedbackApiPlugin(),
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  return {
+    plugins: [
+      react(),
+      feedbackApiPlugin(env),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
@@ -122,4 +126,6 @@ export default defineConfig({
       }
     }
   }
+};
 });
+

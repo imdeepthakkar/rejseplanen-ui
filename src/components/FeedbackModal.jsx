@@ -34,7 +34,7 @@ export default function FeedbackModal({ isOpen, onClose, context = {} }) {
       setFallbackUrl(null);
       setSuccessResult(null);
     }
-  }, [isOpen, context]);
+  }, [isOpen]);
 
   // Handle ESC key to close
   useEffect(() => {

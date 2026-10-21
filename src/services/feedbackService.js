@@ -110,7 +110,9 @@ export async function submitFeedback(feedback, context = {}) {
 
   if (!res.ok) {
     const errData = await res.json().catch(() => ({}));
-    throw new Error(errData.error || 'Failed to submit feedback');
+    const error = new Error(errData.error || 'Failed to submit feedback');
+    error.fallbackUrl = errData.fallbackUrl;
+    throw error;
   }
 
   return res.json();
