@@ -7,7 +7,6 @@ import {
   Sparkles,
   Send,
   Check,
-  ExternalLink,
   ChevronDown,
   ChevronUp,
   AlertCircle
@@ -137,20 +136,8 @@ export default function FeedbackModal({ isOpen, onClose, context = {} }) {
                 <div className="feedback-success-desc">
                   {successResult.offline
                     ? successResult.message
-                    : 'Your feedback has been submitted and tracked directly in our development backlog.'}
+                    : 'Thank you! Your feedback has been received and sent directly to our development team.'}
                 </div>
-
-                {successResult.issueNumber && (
-                  <a
-                    href={successResult.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="feedback-issue-pill"
-                  >
-                    <span>Issue #{successResult.issueNumber}</span>
-                    <ExternalLink size={12} />
-                  </a>
-                )}
 
                 <button
                   type="button"
