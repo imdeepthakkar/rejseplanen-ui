@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { classifyDeparture, MODE_KEYS, TRANSPORT_MODES } from './transportModes';
+import { classifyDeparture, getAvailableModes, MODE_KEYS, TRANSPORT_MODES } from './transportModes';
 
 describe('transportModes', () => {
   it('defines the 6 required modes with correct colors and metadata', () => {
@@ -41,5 +41,32 @@ describe('transportModes', () => {
     expect(classifyDeparture({ type: 'ICL', name: 'ICL 23' })).toBe('RE');
     expect(classifyDeparture({ type: 'TOG', name: 'ICE 10934' })).toBe('RE');
     expect(classifyDeparture({ type: 'TOG', name: 'Öresundståg 1123' })).toBe('RE');
+  });
+
+  describe('getAvailableModes', () => {
+    it('always includes ALL mode even when departures is empty', () => {
+      expect(getAvailableModes([])).toEqual(['ALL']);
+      expect(getAvailableModes(null)).toEqual(['ALL']);
+      expect(getAvailableModes(undefined)).toEqual(['ALL']);
+    });
+
+    it('detects S-Tog and Bus for a suburban station like Herlev', () => {
+      const deps = [
+        { type: 'S', name: 'A' },
+        { type: 'S', name: 'C' },
+        { type: 'BUS', name: '5C' },
+        { type: 'EXB', name: '300S' }
+      ];
+      expect(getAvailableModes(deps)).toEqual(['ALL', 'BUS', 'S_TOG']);
+    });
+
+    it('preserves canonical order and omits missing modes', () => {
+      const deps = [
+        { type: 'M', name: 'Metro M1' },
+        { type: 'REG', name: 'RE 123' },
+        { type: 'LET', name: 'L1' }
+      ];
+      expect(getAvailableModes(deps)).toEqual(['ALL', 'METRO', 'RE', 'LETBANE']);
+    });
   });
 });

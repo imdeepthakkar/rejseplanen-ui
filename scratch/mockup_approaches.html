@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rejseplanen Layout Comparison</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F4F6F9;
+      --cardSolid: #FFFFFF;
+      --cardBorder: rgba(0, 0, 0, 0.08);
+      --ink: #1C1C1E;
+      --sub: #636366;
+      --soft: #8E8E93;
+      --pop: #007AFF;
+      --danger: #FF3B30;
+      --warning: #FF9500;
+      --success: #34C759;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 16px;
+      background: var(--bg);
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      color: var(--ink);
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .approach-container {
+      background: #FFFFFF;
+      border-radius: 20px;
+      padding: 18px 14px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .approach-header {
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1.5px solid #F0F2F5;
+    }
+
+    .badge-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: #E8F2FF;
+      color: #007AFF;
+      margin-bottom: 6px;
+    }
+
+    .badge-tag.alt {
+      background: #F3E8FF;
+      color: #7E22CE;
+    }
+
+    .approach-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--ink);
+      margin: 0 0 4px 0;
+    }
+
+    .approach-desc {
+      font-size: 12px;
+      color: var(--sub);
+      margin: 0;
+    }
+
+    /* Dynamic filter bar for Herlev St (3 buttons) */
+    .filter-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .filter-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 6px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      border: 1.5px solid transparent;
+      cursor: pointer;
+    }
+
+    .filter-btn.active {
+      background: #1C1C1E;
+      color: #FFFFFF;
+    }
+
+    .filter-btn.bus {
+      background: #FFFBEB;
+      color: #92400E;
+      border-color: #FDE68A;
+    }
+
+    .filter-btn.stog {
+      background: #FEF2F2;
+      color: #991B1B;
+      border-color: #FECACA;
+    }
+
+    .cards-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .card {
+      background: #FFFFFF;
+      border: 1px solid var(--cardBorder);
+      border-radius: 14px;
+      padding: 12px 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+
+    .line-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 13px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      min-width: 34px;
+      text-align: center;
+    }
+
+    .line-badge.stog-c {
+      background: #E51937;
+      color: #FFFFFF;
+    }
+
+    .line-badge.bus-5c {
+      background: #00A5DE;
+      color: #FFFFFF;
+    }
+
+    .line-badge.bus-300s {
+      background: #004B87;
+      color: #FFFFFF;
+    }
+
+    .countdown-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    .countdown-pill.now {
+      background: #FFEBEB;
+      color: #D32F2F;
+      border: 1px solid rgba(211, 47, 47, 0.2);
+    }
+
+    .countdown-pill.imminent {
+      background: #EBF8EE;
+      color: #1B8738;
+      border: 1px solid rgba(27, 135, 56, 0.2);
+    }
+
+    .countdown-pill.normal {
+      background: #F0F4F8;
+      color: #334E68;
+      border: 1px solid rgba(51, 78, 104, 0.15);
+    }
+
+    .track-tag {
+      font-size: 11px;
+      font-weight: 700;
+      color: #636366;
+      background: #F2F2F7;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    /* APPROACH 1 STYLES */
+    .app1-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .app1-left {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .app1-dest-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .app1-dest {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.25;
+      word-break: break-word;
+    }
+
+    .app1-status {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #D32F2F;
+    }
+
+    .app1-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      flex-shrink: 0;
+      text-align: right;
+    }
+
+    .app1-time-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .app1-clock {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    /* APPROACH 2 STYLES */
+    .app2-card {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .app2-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .app2-top-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .app2-clock {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .app2-top-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .app2-bottom {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .app2-dest {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .app2-status {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #D32F2F;
+      margin-left: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HERLEV STATION HEADER -->
+  <div style="display: flex; justify-content: space-between; align-items: baseline;">
+    <h2 style="margin: 0; font-size: 19px; font-weight: 800;">Herlev St.</h2>
+    <span style="font-size: 12px; color: #8E8E93; font-weight: 600;">Live Departures</span>
+  </div>
+
+  <!-- APPROACH 1 -->
+  <div class="approach-container">
+    <div class="approach-header">
+      <span class="badge-tag">Approach 1 (Recommended)</span>
+      <h3 class="approach-title">Left (What & Where) + Right (When & Platform)</h3>
+      <p class="approach-desc">Line & Destination on the left. Countdown pill, departure time & platform right-aligned. Perfectly balanced.</p>
+    </div>
+
+    <!-- DYNAMIC FILTERS: ONLY 3 SHOWING FOR HERLEV ST -->
+    <div style="font-size: 11px; font-weight: 700; color: #8E8E93; margin-bottom: 4px; text-transform: uppercase;">
+      Dynamic Filters (Auto-detected for Herlev)
+    </div>
+    <div class="filter-bar">
+      <button class="filter-btn active">● All</button>
+      <button class="filter-btn stog">🚆 S-Tog</button>
+      <button class="filter-btn bus">🚌 Bus</button>
+    </div>
+
+    <div class="cards-list">
+      <!-- Item 1: S-Tog C -->
+      <div class="card app1-card">
+        <div class="app1-left">
+          <span class="line-badge stog-c">C</span>
+          <div class="app1-dest-wrap">
+            <span class="app1-dest">→ Klampenborg St.</span>
+            <span class="app1-status">(Expected: 19:18)</span>
+          </div>
+        </div>
+        <div class="app1-right">
+          <span class="countdown-pill imminent">2 min</span>
+          <div class="app1-time-row">
+            <span class="app1-clock">19:15</span>
+            <span class="track-tag">Spor 2</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 2: Bus 5C -->
+      <div class="card app1-card">
+        <div class="app1-left">
+          <span class="line-badge bus-5c">5C</span>
+          <div class="app1-dest-wrap">
+            <span class="app1-dest">→ Herlev Hospital</span>
+          </div>
+        </div>
+        <div class="app1-right">
+          <span class="countdown-pill now">Now</span>
+          <div class="app1-time-row">
+            <span class="app1-clock">19:12</span>
+            <span class="track-tag">Spor A</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 3: Bus 300S -->
+      <div class="card app1-card">
+        <div class="app1-left">
+          <span class="line-badge bus-300s">300S</span>
+          <div class="app1-dest-wrap">
+            <span class="app1-dest">→ Glostrup St.</span>
+          </div>
+        </div>
+        <div class="app1-right">
+          <span class="countdown-pill normal">8 min</span>
+          <div class="app1-time-row">
+            <span class="app1-clock">19:22</span>
+            <span class="track-tag">Spor D</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPROACH 2 -->
+  <div class="approach-container">
+    <div class="approach-header">
+      <span class="badge-tag alt">Approach 2</span>
+      <h3 class="approach-title">Split Meta Bar (Top Meta + Full Width Direction)</h3>
+      <p class="approach-desc">Top row has Line + Time on left, Countdown + Platform on right. Bottom row gives destination full width.</p>
+    </div>
+
+    <!-- DYNAMIC FILTERS: ONLY 3 SHOWING FOR HERLEV ST -->
+    <div style="font-size: 11px; font-weight: 700; color: #8E8E93; margin-bottom: 4px; text-transform: uppercase;">
+      Dynamic Filters (Auto-detected for Herlev)
+    </div>
+    <div class="filter-bar">
+      <button class="filter-btn active">● All</button>
+      <button class="filter-btn stog">🚆 S-Tog</button>
+      <button class="filter-btn bus">🚌 Bus</button>
+    </div>
+
+    <div class="cards-list">
+      <!-- Item 1: S-Tog C -->
+      <div class="card app2-card">
+        <div class="app2-top">
+          <div class="app2-top-left">
+            <span class="line-badge stog-c">C</span>
+            <span class="app2-clock">19:15</span>
+          </div>
+          <div class="app2-top-right">
+            <span class="track-tag">Spor 2</span>
+            <span class="countdown-pill imminent">2 min</span>
+          </div>
+        </div>
+        <div class="app2-bottom">
+          <span class="app2-dest">→ Klampenborg St.</span>
+          <span class="app2-status">(Expected: 19:18)</span>
+        </div>
+      </div>
+
+      <!-- Item 2: Bus 5C -->
+      <div class="card app2-card">
+        <div class="app2-top">
+          <div class="app2-top-left">
+            <span class="line-badge bus-5c">5C</span>
+            <span class="app2-clock">19:12</span>
+          </div>
+          <div class="app2-top-right">
+            <span class="track-tag">Spor A</span>
+            <span class="countdown-pill now">Now</span>
+          </div>
+        </div>
+        <div class="app2-bottom">
+          <span class="app2-dest">→ Herlev Hospital</span>
+        </div>
+      </div>
+
+      <!-- Item 3: Bus 300S -->
+      <div class="card app2-card">
+        <div class="app2-top">
+          <div class="app2-top-left">
+            <span class="line-badge bus-300s">300S</span>
+            <span class="app2-clock">19:22</span>
+          </div>
+          <div class="app2-top-right">
+            <span class="track-tag">Spor D</span>
+            <span class="countdown-pill normal">8 min</span>
+          </div>
+        </div>
+        <div class="app2-bottom">
+          <span class="app2-dest">→ Glostrup St.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

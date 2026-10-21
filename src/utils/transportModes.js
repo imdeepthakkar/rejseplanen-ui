@@ -87,3 +87,28 @@ export function classifyDeparture(departure) {
   // 5. Regional / Intercity / International trains
   return 'RE';
 }
+
+export function getAvailableModes(departures) {
+  if (!Array.isArray(departures) || departures.length === 0) {
+    return [TRANSPORT_MODES.ALL.id];
+  }
+
+  const detected = new Set();
+  for (const dep of departures) {
+    const mode = classifyDeparture(dep);
+    if (mode && mode !== TRANSPORT_MODES.ALL.id) {
+      detected.add(mode);
+    }
+  }
+
+  const canonicalOrder = [
+    TRANSPORT_MODES.ALL.id,
+    TRANSPORT_MODES.BUS.id,
+    TRANSPORT_MODES.S_TOG.id,
+    TRANSPORT_MODES.METRO.id,
+    TRANSPORT_MODES.RE.id,
+    TRANSPORT_MODES.LETBANE.id
+  ];
+
+  return canonicalOrder.filter(modeId => modeId === TRANSPORT_MODES.ALL.id || detected.has(modeId));
+}

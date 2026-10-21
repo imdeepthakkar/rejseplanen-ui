@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { fetchLocation, fetchDepartures, fetchStopsNearby } from '../services/api';
 import { getFavorites } from '../services/storage';
 import { getTransportStyle, formatLineBadge } from '../utils/transportStyles';
-import { classifyDeparture, TRANSPORT_MODES } from '../utils/transportModes';
+import { classifyDeparture, getAvailableModes, TRANSPORT_MODES } from '../utils/transportModes';
 import { getLiveCountdown } from '../utils/countdownHelpers';
 import { timeToMinutes, timeDifferenceMinutes } from '../utils/timeHelpers';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -245,6 +245,18 @@ export default function LiveDepartures() {
     }
   };
 
+  // Available modes computed dynamically based on the current station's departures
+  const availableModes = useMemo(() => {
+    return getAvailableModes(departures);
+  }, [departures]);
+
+  // If currently selected mode is no longer available at this station, reset to ALL
+  useEffect(() => {
+    if (selectedMode !== 'ALL' && !availableModes.includes(selectedMode)) {
+      setSelectedMode('ALL');
+    }
+  }, [availableModes, selectedMode]);
+
   // Filter departures according to selectedMode
   const filteredDepartures = useMemo(() => {
     if (!departures) return [];
@@ -319,6 +331,7 @@ export default function LiveDepartures() {
           <ModeFilterBar
             selectedMode={selectedMode}
             onSelectMode={setSelectedMode}
+            availableModes={availableModes}
           />
 
           {departures.length === 0 ? (
@@ -359,15 +372,9 @@ export default function LiveDepartures() {
                         transition={{ duration: 0.2, delay: Math.min(i * 0.025, 0.25) }}
                         className="departure-card"
                       >
-                        {/* Row 1: Countdown + Clock Time + Badge + Track */}
-                        <div className="dep-header-row">
-                          <div className="dep-meta-left">
-                            <span 
-                              className={`countdown-badge ${countdown.isImminent ? 'is-imminent' : countdown.isDelayed ? 'is-delayed' : 'is-normal'}`}
-                            >
-                              {countdown.text}
-                            </span>
-                            <span className="dep-clock-time">{d.time}</span>
+                        <div className="dep-card-content">
+                          {/* Left: What & Where */}
+                          <div className="dep-card-left">
                             <span
                               className="dep-line-badge"
                               style={{
@@ -377,29 +384,41 @@ export default function LiveDepartures() {
                             >
                               {badgeText}
                             </span>
+                            <div className="dep-dest-wrap">
+                              <div className="dep-direction">
+                                <span className="dep-arrow" aria-hidden="true">→</span>
+                                <div className="dep-dest-text-group">
+                                  <span className="dep-dest-name">{d.direction}</span>
+                                  {d.cancelled === 'true' ? (
+                                    <span className="dep-status-line cancelled">
+                                      (Aflyst / Cancelled)
+                                    </span>
+                                  ) : isDelayed ? (
+                                    <span className="dep-status-line delayed">
+                                      (Expected: {d.rtTime})
+                                    </span>
+                                  ) : null}
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                          {trackText && (
-                            <span className={`dep-track ${trackChanged ? 'is-changed' : ''}`}>
-                              Spor {trackText}
-                            </span>
-                          )}
-                        </div>
 
-                        {/* Row 2: Direction (full width, wrapping, zero ellipsis truncation) */}
-                        <div className="dep-body-row">
-                          <div className="dep-direction">
-                            <span className="dep-arrow" aria-hidden="true">→</span>
-                            <span>{d.direction}</span>
+                          {/* Right: When & Platform */}
+                          <div className="dep-card-right">
+                            <span 
+                              className={`countdown-badge ${countdown.isImminent ? 'is-imminent' : countdown.isDelayed ? 'is-delayed' : 'is-normal'}`}
+                            >
+                              {countdown.text}
+                            </span>
+                            <div className="dep-time-row">
+                              <span className="dep-clock-time">{d.time}</span>
+                              {trackText && (
+                                <span className={`dep-track ${trackChanged ? 'is-changed' : ''}`}>
+                                  Spor {trackText}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          {d.cancelled === 'true' ? (
-                            <span className="dep-status-line cancelled">
-                              (Aflyst / Cancelled)
-                            </span>
-                          ) : isDelayed ? (
-                            <span className="dep-status-line delayed">
-                              (Expected: {d.rtTime})
-                            </span>
-                          ) : null}
                         </div>
                       </motion.li>
                     );
