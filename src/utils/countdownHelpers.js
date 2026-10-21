@@ -26,7 +26,7 @@ export function getLiveCountdown(timeStr, rtTimeStr, now = new Date()) {
 
   let text;
   if (diff <= 0) {
-    text = 'Nu';
+    text = 'Now';
   } else if (diff === 1) {
     text = '1 min';
   } else if (diff < 60) {

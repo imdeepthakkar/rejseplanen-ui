@@ -2,15 +2,15 @@ import { describe, it, expect } from 'vitest';
 import { getLiveCountdown } from './countdownHelpers';
 
 describe('countdownHelpers', () => {
-  it('returns "Nu" when departure is in less than 1 minute or in the past', () => {
+  it('returns "Now" when departure is in less than 1 minute or in the past', () => {
     const now = new Date(2026, 9, 21, 18, 30, 0); // 18:30
     const res = getLiveCountdown('18:30', null, now);
-    expect(res.text).toBe('Nu');
+    expect(res.text).toBe('Now');
     expect(res.minutes).toBe(0);
     expect(res.isImminent).toBe(true);
 
     const pastRes = getLiveCountdown('18:28', null, now);
-    expect(pastRes.text).toBe('Nu');
+    expect(pastRes.text).toBe('Now');
     expect(pastRes.minutes).toBeLessThanOrEqual(0);
   });
 
