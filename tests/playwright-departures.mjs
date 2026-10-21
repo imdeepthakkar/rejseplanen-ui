@@ -11,6 +11,8 @@ async function run() {
   const page = await context.newPage();
 
   console.log('Navigating to http://localhost:5174/ ...');
+  page.on('console', msg => console.log('BROWSER LOG:', msg.text()));
+  page.on('pageerror', err => console.log('BROWSER ERROR:', err.message));
   await page.goto('http://localhost:5174/');
   await page.waitForTimeout(1000);
 
@@ -37,7 +39,14 @@ async function run() {
   await submitBtn.click();
 
   console.log('Waiting for departures to load...');
-  await page.waitForSelector('.departure-card', { timeout: 15000 });
+  try {
+    await page.waitForSelector('.departure-card', { timeout: 15000 });
+  } catch (err) {
+    await page.screenshot({ path: path.resolve('debug_timeout.png') });
+    const bodyText = await page.evaluate(() => document.body.innerText);
+    console.log('PAGE TEXT ON TIMEOUT:', bodyText);
+    throw err;
+  }
   await page.waitForTimeout(1000);
 
   // 1. Verify Mode Filter Bar
@@ -51,8 +60,7 @@ async function run() {
   const chipLabels = [];
   for (const chip of filterChips) {
     const label = await chip.locator('.mode-filter-label').innerText();
-    const count = await chip.locator('.mode-filter-count').innerText();
-    chipLabels.push(`${label} (${count})`);
+    chipLabels.push(label);
   }
   console.log('Filter chips present:', chipLabels.join(' | '));
 

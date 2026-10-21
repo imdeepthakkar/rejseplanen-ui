@@ -4,7 +4,7 @@ import { getFavorites } from '../services/storage';
 import { getTransportStyle, formatLineBadge } from '../utils/transportStyles';
 import { classifyDeparture, TRANSPORT_MODES } from '../utils/transportModes';
 import { getLiveCountdown } from '../utils/countdownHelpers';
-import { timeDifferenceMinutes } from '../utils/timeHelpers';
+import { timeToMinutes, timeDifferenceMinutes } from '../utils/timeHelpers';
 import { motion, AnimatePresence } from 'framer-motion';
 import AutocompleteInput from './AutocompleteInput';
 import FavoriteChips from './FavoriteChips';
@@ -20,6 +20,7 @@ export default function LiveDepartures() {
   const [departures, setDepartures] = useState(null);
   const [resolvedStop, setResolvedStop] = useState(null);
   const [resolvedStopId, setResolvedStopId] = useState(null);
+  const [resolvedStopIds, setResolvedStopIds] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState('');
@@ -136,10 +137,24 @@ export default function LiveDepartures() {
         distance: nearbyDistance,
         isNearby
       });
-      setResolvedStopId(targetStop.id);
 
-      // 2. Get departures window covering at least 30 minutes
-      const deps = await fetchDeparturesWindow(targetStop.id, [], 30, 3);
+      // Find associated sibling stops for major hubs (Metro / Letbane)
+      const baseClean = targetStop.name.replace(/\s*\((Metro|Letbane|togbus|bus|Lokalbane)\)/i, '').trim().toLowerCase();
+      const linked = stopList.filter(s => {
+        if (!s.id || s.id === targetStop.id) return false;
+        const sClean = s.name.replace(/\s*\((Metro|Letbane|togbus|bus|Lokalbane)\)/i, '').trim().toLowerCase();
+        return sClean === baseClean && (
+          s.name.toLowerCase().includes('(metro)') ||
+          s.name.toLowerCase().includes('(letbane)')
+        );
+      });
+
+      const allStopIds = [targetStop.id, ...linked.map(s => s.id)];
+      setResolvedStopId(targetStop.id);
+      setResolvedStopIds(allStopIds);
+
+      // 2. Get departures window covering at least 30 minutes across all hub stops
+      const deps = await fetchDeparturesWindow(allStopIds, [], 30, 3);
       setDepartures(deps);
     } catch (err) {
       setError(err.message || 'Failed to fetch departures');
@@ -148,7 +163,8 @@ export default function LiveDepartures() {
     }
   };
 
-  const fetchDeparturesWindow = async (stopId, startDeps = [], minSpanMinutes = 30, maxBatches = 3) => {
+  const fetchDeparturesWindow = async (stopIds, startDeps = [], minSpanMinutes = 30, maxBatches = 3) => {
+    const ids = Array.isArray(stopIds) ? stopIds : [stopIds];
     let combined = [...startDeps];
     let seen = new Set(combined.map(getDepartureKey));
     let batches = 0;
@@ -157,23 +173,31 @@ export default function LiveDepartures() {
 
     while (batches < maxBatches) {
       batches++;
-      const depRes = await fetchDepartures(stopId, nextTime);
-      const rawDeps = depRes.DepartureBoard?.Departure || [];
-      const batchDeps = Array.isArray(rawDeps) ? rawDeps : [rawDeps];
-
-      if (batchDeps.length === 0) break;
+      const depResults = await Promise.all(
+        ids.map(id => fetchDepartures(id, nextTime).catch(err => {
+          console.warn('Failed to fetch from stop ' + id, err);
+          return { DepartureBoard: { Departure: [] } };
+        }))
+      );
 
       let newItemsAdded = 0;
-      for (const d of batchDeps) {
-        const key = getDepartureKey(d);
-        if (!seen.has(key)) {
-          seen.add(key);
-          combined.push(d);
-          newItemsAdded++;
+      for (const depRes of depResults) {
+        const rawDeps = depRes?.DepartureBoard?.Departure || [];
+        const batchDeps = Array.isArray(rawDeps) ? rawDeps : [rawDeps];
+        for (const d of batchDeps) {
+          const key = getDepartureKey(d);
+          if (!seen.has(key)) {
+            seen.add(key);
+            combined.push(d);
+            newItemsAdded++;
+          }
         }
       }
 
       if (newItemsAdded === 0) break;
+
+      // Sort combined chronologically
+      combined.sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
 
       const firstTime = combined[0]?.time;
       const lastTime = combined[combined.length - 1]?.time;
@@ -188,10 +212,11 @@ export default function LiveDepartures() {
   };
 
   const handleLoadLater = async () => {
-    if (!resolvedStopId || !departures || departures.length === 0 || loadingMore) return;
+    const ids = resolvedStopIds.length > 0 ? resolvedStopIds : (resolvedStopId ? [resolvedStopId] : []);
+    if (ids.length === 0 || !departures || departures.length === 0 || loadingMore) return;
     setLoadingMore(true);
     try {
-      const more = await fetchDeparturesWindow(resolvedStopId, departures, 30, 3);
+      const more = await fetchDeparturesWindow(ids, departures, 30, 3);
       setDepartures(more);
     } catch (err) {
       console.error('Failed to load more departures', err);
@@ -219,17 +244,6 @@ export default function LiveDepartures() {
       loadDepartures(homeAddr);
     }
   };
-
-  // Compute live departure counts by mode
-  const counts = useMemo(() => {
-    const acc = { ALL: departures?.length || 0, BUS: 0, S_TOG: 0, METRO: 0, RE: 0, LETBANE: 0 };
-    if (!departures) return acc;
-    for (const d of departures) {
-      const m = classifyDeparture(d);
-      if (acc[m] !== undefined) acc[m]++;
-    }
-    return acc;
-  }, [departures]);
 
   // Filter departures according to selectedMode
   const filteredDepartures = useMemo(() => {
@@ -305,7 +319,6 @@ export default function LiveDepartures() {
           <ModeFilterBar
             selectedMode={selectedMode}
             onSelectMode={setSelectedMode}
-            counts={counts}
           />
 
           {departures.length === 0 ? (

@@ -35,14 +35,13 @@ function renderModeIcon(iconType) {
   }
 }
 
-export default function ModeFilterBar({ selectedMode, onSelectMode, counts = {} }) {
+export default function ModeFilterBar({ selectedMode, onSelectMode }) {
   return (
     <div className="mode-filter-container" role="toolbar" aria-label="Filter departures by transport mode">
       <div className="mode-filter-scroll">
         {MODE_KEYS.map((key) => {
           const config = TRANSPORT_MODES[key];
           const isSelected = selectedMode === key;
-          const count = counts[key] ?? 0;
 
           return (
             <button
@@ -51,7 +50,7 @@ export default function ModeFilterBar({ selectedMode, onSelectMode, counts = {} 
               className={`mode-filter-chip ${isSelected ? 'active' : ''} mode-${key.toLowerCase()}`}
               onClick={() => onSelectMode(key)}
               aria-pressed={isSelected}
-              title={`Filter by ${config.label} (${count})`}
+              title={`Filter by ${config.label}`}
             >
               <span 
                 className="mode-filter-icon-wrap" 
@@ -60,7 +59,6 @@ export default function ModeFilterBar({ selectedMode, onSelectMode, counts = {} 
                 {renderModeIcon(config.iconType)}
               </span>
               <span className="mode-filter-label">{config.label}</span>
-              <span className="mode-filter-count">{count}</span>
             </button>
           );
         })}
