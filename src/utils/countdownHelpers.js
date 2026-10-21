@@ -1,3 +1,5 @@
+import { formatDuration } from './timeHelpers';
+
 export function getLiveCountdown(timeStr, rtTimeStr, now = new Date()) {
   if (!timeStr) {
     return { text: '--', minutes: 0, isDelayed: false, isImminent: false };
@@ -32,9 +34,7 @@ export function getLiveCountdown(timeStr, rtTimeStr, now = new Date()) {
   } else if (diff < 60) {
     text = `${diff} min`;
   } else {
-    const hours = Math.floor(diff / 60);
-    const mins = diff % 60;
-    text = `${hours}t ${mins}m`;
+    text = formatDuration(diff);
   }
 
   return {

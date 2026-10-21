@@ -30,11 +30,15 @@ describe('countdownHelpers', () => {
     expect(res.isDelayed).toBe(true);
   });
 
-  it('formats hours and minutes when over 60 minutes', () => {
+  it('formats hours and minutes when over 60 minutes in English format', () => {
     const now = new Date(2026, 9, 21, 18, 0, 0);
     const res = getLiveCountdown('19:25', null, now);
-    expect(res.text).toBe('1t 25m');
+    expect(res.text).toBe('1 Hr 25 Mins');
     expect(res.minutes).toBe(85);
+
+    const exactHourRes = getLiveCountdown('19:00', null, now);
+    expect(exactHourRes.text).toBe('1 Hr');
+    expect(exactHourRes.minutes).toBe(60);
   });
 
   it('handles midnight boundary gracefully', () => {

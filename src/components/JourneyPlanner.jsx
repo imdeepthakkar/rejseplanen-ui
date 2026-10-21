@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ArrowUpDown } from 'lucide-react';
 import { fetchLocation, fetchJourney } from '../services/api';
 import { getTransportStyle } from '../utils/transportStyles';
-import { timeToMinutes, timeDifferenceMinutes } from '../utils/timeHelpers';
+import { timeToMinutes, timeDifferenceMinutes, formatDuration } from '../utils/timeHelpers';
 import { motion, AnimatePresence } from 'framer-motion';
 import AutocompleteInput from './AutocompleteInput';
 import FavoriteChips from './FavoriteChips';
@@ -309,7 +309,7 @@ export default function JourneyPlanner() {
                 
                 // Helper to calculate duration and extract minutes
                 const calculateJourneyStats = (startDateStr, startTimeStr, endDateStr, endTimeStr) => {
-                  if (!startDateStr || !startTimeStr || !endDateStr || !endTimeStr) return { durationStr: 'N/A', totalMins: 0 };
+                  if (!startDateStr || !startTimeStr || !endDateStr || !endTimeStr) return { totalMins: 0, formattedDuration: '0 Mins' };
                   try {
                     const parseDate = (d, t) => {
                       const [DD, MM, YY] = d.split('.');
@@ -319,10 +319,10 @@ export default function JourneyPlanner() {
                     const startDt = parseDate(startDateStr, startTimeStr);
                     const endDt = parseDate(endDateStr, endTimeStr);
                     const diffMs = endDt - startDt;
-                    const totalMins = Math.round(diffMs / 60000);
-                    return { totalMins };
+                    const totalMins = Math.max(0, Math.round(diffMs / 60000));
+                    return { totalMins, formattedDuration: formatDuration(totalMins) };
                   } catch (e) {
-                    return { totalMins: 0 };
+                    return { totalMins: 0, formattedDuration: '0 Mins' };
                   }
                 };
                 
@@ -365,7 +365,7 @@ export default function JourneyPlanner() {
                           )}
                         </div>
                         <div style={{ fontSize: '0.95rem', color: 'var(--sub)', display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
-                          <span><strong>Total:</strong> {stats.totalMins} min</span>
+                          <span><strong>Time to Travel:</strong> {stats.formattedDuration}</span>
                         </div>
                       </div>
 
@@ -452,7 +452,7 @@ export default function JourneyPlanner() {
                                     </span>
                                   )}
                                 </div>
-                                <div style={{ marginTop: '8px', fontSize: '14px', color: 'var(--sub)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div style={{ marginTop: '8px', fontSize: '14px', color: 'var(--sub)', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                                   <span style={{
                                     background: style.color,
                                     color: '#fff',
@@ -461,7 +461,12 @@ export default function JourneyPlanner() {
                                     fontWeight: '700',
                                     fontSize: '12px'
                                   }}>{leg.type === 'WALK' ? 'Walk' : leg.name}</span>
-                                  {leg.type === 'WALK' ? 'Walk to next stop' : `to ${leg.Destination.name.split(',')[0]}`}
+                                  <span>{leg.type === 'WALK' ? 'Walk to next stop' : `to ${leg.Destination.name.split(',')[0]}`}</span>
+                                  {leg.Origin?.time && leg.Destination?.time && (
+                                    <span style={{ fontSize: '12px', color: '#888', fontWeight: '500' }}>
+                                      ({formatDuration(timeDifferenceMinutes(leg.Origin.time, leg.Destination.time))})
+                                    </span>
+                                  )}
                                 </div>
                               </div>
                             </div>
