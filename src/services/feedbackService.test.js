@@ -98,7 +98,7 @@ describe('feedbackService', () => {
       description: 'Alert me on delay'
     });
 
-    expect(globalThis.fetch).toHaveBeenCalledWith('/api/feedback', expect.objectContaining({
+    expect(globalThis.fetch).toHaveBeenCalledWith('./api/feedback', expect.objectContaining({
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     }));

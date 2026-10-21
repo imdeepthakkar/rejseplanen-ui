@@ -104,7 +104,7 @@ export async function submitFeedback(feedback, context = {}) {
 
   let res;
   try {
-    res = await fetch('/api/feedback', {
+    res = await fetch('./api/feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
