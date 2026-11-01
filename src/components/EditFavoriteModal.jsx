@@ -103,11 +103,11 @@ export default function EditFavoriteModal({ isOpen, onClose, onFavoritesChanged 
           setEditStation(nearest.name);
           setStationSuggestions([]);
         } else {
-          alert("No nearby stops found");
+          alert("No nearby transit stops found (Rejseplanen operates in Denmark).");
         }
       } catch (err) {
         console.error(err);
-        alert("Failed to find location");
+        alert("Failed to find nearby transit stops. (Rejseplanen operates in Denmark).");
       } finally {
         setLocating(false);
       }

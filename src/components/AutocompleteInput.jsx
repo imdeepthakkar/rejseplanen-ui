@@ -112,18 +112,18 @@ export default function AutocompleteInput({ value, onChange, onSelect, placehold
         
         const res = await fetch(url).then(r => r.json());
         const stops = res.LocationList?.StopLocation;
-        if (stops && stops.length > 0) {
-          const stopName = stops[0].name;
+        if (stops && (Array.isArray(stops) ? stops.length > 0 : stops.name)) {
+          const stopName = Array.isArray(stops) ? stops[0].name : stops.name;
           onChange(stopName);
           setIsOpen(false);
           inputRef.current?.blur();
           onSelect?.(stopName);
         } else {
-          alert("No nearby stops found");
+          alert("No nearby transit stops found (Rejseplanen operates in Denmark).");
         }
       } catch (err) {
         console.error(err);
-        alert("Failed to find location");
+        alert("Failed to find nearby transit stops. (Rejseplanen operates in Denmark).");
       } finally {
         setLocating(false);
       }
