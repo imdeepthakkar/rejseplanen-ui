@@ -20,8 +20,8 @@ export async function handleFeedbackRequest(req, env = {}) {
     };
   }
 
-  const token = env.token ?? process.env.GITHUB_FEEDBACK_TOKEN;
-  const repo = env.repo || process.env.GITHUB_FEEDBACK_REPO || 'imdeepthakkar/rejseplanen-ui';
+  const token = env.token ?? (typeof process !== 'undefined' ? process?.env?.GITHUB_FEEDBACK_TOKEN : undefined);
+  const repo = env.repo || (typeof process !== 'undefined' ? process?.env?.GITHUB_FEEDBACK_REPO : undefined) || 'imdeepthakkar/rejseplanen-ui';
 
   if (!token) {
     return {

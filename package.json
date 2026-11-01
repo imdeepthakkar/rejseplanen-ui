@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest run",
+    "test": "vitest run --exclude \"scratch/**\"",
     "test:e2e": "node tests/playwright-departures.mjs"
   },
   "dependencies": {
